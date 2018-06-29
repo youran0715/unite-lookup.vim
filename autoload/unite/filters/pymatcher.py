@@ -1,5 +1,6 @@
 import vim, re
 import heapq
+import platform;
 
 _escape = dict((c , "\\" + c) for c in ['^','$','.','{','}','(',')','[',']','\\','/','+'])
 
@@ -33,6 +34,8 @@ def UnitePyMatch():
     def filename_score(line):
         # get filename via reverse find to improve performance
         slashPos = line.rfind('/')
+        if platform.system() == "Windows":
+            slashPos = line.rfind('\\')
 
         if slashPos != -1:
             line = line[slashPos + 1:]

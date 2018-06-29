@@ -236,10 +236,47 @@ endfunction
 
 function! s:refresh_filelist_windows()
     let path = s:get_cache_path_filelist()
-	call s:system("echo '!_TAG_FILE_SORTED	2	/2=foldcase/' > " . path)
 	
-	let cmd = "for /r ./ %i in (*) do @echo %~nxi	%i	1 >> " . path
+	" call s:system("echo '!_TAG_FILE_SORTED	2	/2=foldcase/' > " . path)
+	" let cmd = "for /r ./ %i in (*) do @echo %~nxi	%i	1 >> " . path
+	
+	let cmd = "for /r ./ %i in (*) do @echo %i> " . path
 	call s:system(cmd)
+
+    let ignore_dirs = copy(g:lookupfile_ignore_dirs)
+    if exists("g:ignore_dirs")
+        call extend(ignore_dirs, g:ignore_dirs)
+    endif
+    let ignore_fts = copy(g:lookupfile_ignore_fts)
+    if exists("g:ignore_fts")
+        call extend(ignore_fts, g:ignore_fts)
+    endif
+
+    let files_all = readfile(path)
+    let files = []
+    for file_path in files_all
+        let is_ignore = 0
+        for ignore_dir in ignore_dirs
+            if file_path =~ ignore_dir . '\\'
+                let is_ignore = 1
+                break
+            endif
+        endfor
+
+        if is_ignore == 0 
+            for ignore_ft in ignore_fts
+                if file_path =~ ignore_ft . "$"
+                    " let is_ignore = 1
+                    break
+                endif
+            endfor
+        endif
+
+        if is_ignore == 0 
+            call add(files, file_path)
+        endif
+    endfor
+    call writefile(files, path)
 endfunction
 
 function! s:refresh_filelist_unix()
