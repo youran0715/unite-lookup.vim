@@ -240,7 +240,8 @@ function! s:refresh_filelist_windows()
 	" call s:system("echo '!_TAG_FILE_SORTED	2	/2=foldcase/' > " . path)
 	" let cmd = "for /r ./ %i in (*) do @echo %~nxi	%i	1 >> " . path
 	
-	let cmd = "for /r ./ %i in (*) do @echo %i> " . path
+	call s:system("echo '' > " . path)
+	let cmd = "for /r ./ %i in (*) do @echo %i>> " . path
 	call s:system(cmd)
 
     let ignore_dirs = copy(g:lookupfile_ignore_dirs)
@@ -255,6 +256,10 @@ function! s:refresh_filelist_windows()
     let files_all = readfile(path)
     let files = []
     for file_path in files_all
+		if file_path == "" || file_path == "''" || file_path == '""' 
+			continue
+		endif
+		
         let is_ignore = 0
         for ignore_dir in ignore_dirs
             if file_path =~ ignore_dir . '\\'
@@ -264,9 +269,10 @@ function! s:refresh_filelist_windows()
         endfor
 
         if is_ignore == 0 
+            let ft = '.' . fnamemodify(file_path, ":e")
             for ignore_ft in ignore_fts
-                if file_path =~ ignore_ft . "$"
-                    " let is_ignore = 1
+                if ft == ignore_ft
+                    let is_ignore = 1
                     break
                 endif
             endfor
