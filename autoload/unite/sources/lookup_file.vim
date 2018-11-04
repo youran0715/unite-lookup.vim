@@ -557,8 +557,8 @@ function! s:gather_candidates_file(args, context)
     let a:context.input = input
     let match_result = unite#filters#matcher_py_fuzzy#matcher(a:context, s:cached_result, refresh)
 
-    if len(match_result) > 200 
-        let match_result = match_result[0:200]
+    if len(match_result) > 150 
+        let match_result = match_result[0:149]
     endif
 
     let result = []
@@ -634,9 +634,13 @@ function! s:gather_candidates_mru(args, context)
     let context.source_name = "lookup/mru"
 
     let buffers = s:get_mrulist(a:context.current_buffer)
-    let buffers_filter = unite#filters#matcher_py_fuzzy#matcher(context, buffers, 1)
+    let match_result = unite#filters#matcher_py_fuzzy#matcher(context, buffers, 1)
 
-    let result = map(buffers_filter, "{
+    if len(match_result) > 50 
+        let match_result = match_result[0:49]
+    endif
+
+    let result = map(match_result, "{
           \ 'word': fnamemodify(v:val, ':t'),
           \ 'abbr': printf('%s', fnamemodify(v:val, ':p:.')),
           \ 'kind'  : 'file',
