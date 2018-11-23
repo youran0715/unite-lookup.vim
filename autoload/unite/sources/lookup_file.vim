@@ -169,14 +169,14 @@ function! s:add_mru(path)
 
     if len(mrus) > g:lookup_file_mru_max 
         " Delete other buffers 
-        let mrus_del = mrus[g:lookup_file_mru_max:]
-        for m in mrus_del 
-            let nr = bufnr(m)
-            if getbufvar(nr, '&modified') == 0
-                exe nr . 'bd'
-            endif
-            unlet nr
-        endfor
+        " let mrus_del = mrus[g:lookup_file_mru_max:]
+        " for m in mrus_del 
+        "     let nr = bufnr(m)
+        "     if getbufvar(nr, '&modified') == 0
+        "         exe nr . 'bd'
+        "     endif
+        "     unlet nr
+        " endfor
 
         let mrus = mrus[:g:lookup_file_mru_max - 1]
     endif
