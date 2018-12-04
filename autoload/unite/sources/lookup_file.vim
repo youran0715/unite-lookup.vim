@@ -22,7 +22,11 @@ if !exists("g:lookupfile_ignore_fts")
 	let g:lookupfile_ignore_fts = ['.o', '.dll', '.lib', '.a', '.so', '.exe', '.dep', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.pyc','.jar', '.log']
 endif
 " let g:lookupfile_ignore_fts = ['.pyc']
-let g:lookupfile_ignore_pattern = '\.o$\|\.dep$\|moc.*\.cpp$\|\.vimproject\|.log$\|\.png$\|\.ico$\|\.jpg$\|\.pyc$\|\.jar$'
+
+if !exists("g:lookupfile_ignore_pattern")
+	let g:lookupfile_ignore_pattern = '\.o$\|\.dep$\|moc.*\.cpp$\|\.vimproject\|.log$\|\.png$\|\.ico$\|\.jpg$\|\.pyc$\|\.jar$'
+endif
+
 let g:lookupfile_cmd_find = 'find'
 
 function! s:get_cache_dir()
