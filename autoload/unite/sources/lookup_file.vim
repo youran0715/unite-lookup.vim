@@ -171,7 +171,19 @@ function! s:add_mru(path)
         endfor
     endif
 
-    let mrus = mrus[:g:lookup_file_mru_max]
+    if len(mrus) > g:lookup_file_mru_max 
+        " Delete other buffers 
+        " let mrus_del = mrus[g:lookup_file_mru_max:]
+        " for m in mrus_del 
+        "     let nr = bufnr(m)
+        "     if getbufvar(nr, '&modified') == 0
+        "         exe nr . 'bd'
+        "     endif
+        "     unlet nr
+        " endfor
+
+        let mrus = mrus[:g:lookup_file_mru_max - 1]
+    endif
 
     call writefile(mrus, mrupath)
 endfunction
@@ -440,37 +452,24 @@ function! s:reset_context(args, context)
     endfor
 endfunction
 
-function! s:load_tags(args, context)
-    let a:context.tags = &tags
-    let &tags = eval(string(s:get_cache_path_filelist()))
-endfunction
-
-function! s:resume_tags(args, context)
-    let &tags = a:context.tags
-endfunction
-
 function! s:source_file.hooks.on_init(args, context)
     let a:context.exclude_buffer = 0
     let a:context.exclude_mru  = 0
     let a:context.current_buffer = fnamemodify(bufname('%'), ":p")
-    call s:load_tags(a:args, a:context)
 endfunction
 
 function! s:source_file.hooks.on_close(args, context)
     call unite#filters#matcher_py_fuzzy#clean(a:context)
-    call s:resume_tags(a:args, a:context)
 endfunction
 
 function! s:source_filebuf.hooks.on_init(args, context)
     let a:context.exclude_buffer = 1
     let a:context.exclude_mru  = 0
     let a:context.current_buffer = bufname('%')
-    call s:load_tags(a:args, a:context)
 endfunction
 
 function! s:source_filebuf.hooks.on_close(args, context)
     call unite#filters#matcher_py_fuzzy#clean(a:context)
-    call s:resume_tags(a:args, a:context)
 endfunction
 
 function! s:source_filemru.hooks.on_init(args, context)
@@ -478,12 +477,10 @@ function! s:source_filemru.hooks.on_init(args, context)
     let a:context.exclude_mru  = 1
     let a:context.current_buffer = fnamemodify(bufname('%'), ":p")
     call s:update_mru_map()
-    call s:load_tags(a:args, a:context)
 endfunction
 
 function! s:source_filemru.hooks.on_close(args, context)
     call unite#filters#matcher_py_fuzzy#clean(a:context)
-    call s:resume_tags(a:args, a:context)
     call s:clean_mru_map()
 endfunction
 
@@ -526,10 +523,13 @@ endfunction
 function! s:source_filemru.gather_candidates(args, context)
     let a:context.mmode = "filename-only"
 
-    if len(a:context.input) < 3 
+    if len(a:context.input) < 4
+        let candidates_file = []
         let candidates_mru  = s:gather_candidates_mru(a:args, a:context)
-        let candidates_file = s:gather_candidates_file(a:args, a:context)
         let candidates_curr = s:gather_candidates_current_buf(a:args, a:context)
+        if len(a:context.input) > 0 
+            let candidates_file = s:gather_candidates_file(a:args, a:context)
+        endif
 
         let result = extend(candidates_mru, candidates_curr)
         let result = extend(result, candidates_file)
@@ -573,9 +573,13 @@ function! s:gather_candidates_file(args, context)
     let a:context.input = input
     let match_result = unite#filters#matcher_py_fuzzy#matcher(a:context, s:cached_result, refresh)
 
+    if len(match_result) > 150 
+        let match_result = match_result[0:149]
+    endif
+
     let result = []
 
-    if len(input) < 3 
+    if len(input) < 4 
         let tag_idx = 0
         while tag_idx < len(match_result)
             let file = match_result[tag_idx]
@@ -646,9 +650,13 @@ function! s:gather_candidates_mru(args, context)
     let context.source_name = "lookup/mru"
 
     let buffers = s:get_mrulist(a:context.current_buffer)
-    let buffers_filter = unite#filters#matcher_py_fuzzy#matcher(context, buffers, 1)
+    let match_result = unite#filters#matcher_py_fuzzy#matcher(context, buffers, 1)
 
-    let result = map(buffers_filter, "{
+    if len(match_result) > 50 
+        let match_result = match_result[0:49]
+    endif
+
+    let result = map(match_result, "{
           \ 'word': fnamemodify(v:val, ':t'),
           \ 'abbr': printf('%s', fnamemodify(v:val, ':p:.')),
           \ 'kind'  : 'file',
