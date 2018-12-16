@@ -22,8 +22,6 @@ if !exists("g:lookupfile_ignore_fts")
 	let g:lookupfile_ignore_fts = ['.o', '.dll', '.lib', '.a', '.so', '.exe', '.dep', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.pyc','.jar', '.log']
 endif
 " let g:lookupfile_ignore_fts = ['.pyc']
-let g:lookupfile_ignore_pattern = '\.o$\|\.dep$\|moc.*\.cpp$\|\.vimproject\|.log$\|\.png$\|\.ico$\|\.jpg$\|\.pyc$\|\.jar$'
-let g:lookupfile_cmd_find = 'find'
 
 function! s:get_cache_dir()
 	set shellslash
@@ -32,7 +30,7 @@ function! s:get_cache_dir()
     if !isdirectory(cache_dir)
         call mkdir(cache_dir)
     endif
-	
+
 	let cwd = substitute(getcwd(), '/', '_', 'g')
 	let cwd = substitute(cwd, ':', '_', 'g')
 	let dir = cache_dir . cwd . '/'
@@ -40,7 +38,7 @@ function! s:get_cache_dir()
     if !isdirectory(dir)
         call mkdir(dir)
     endif
-	
+
 	if g:is_os_windows
 		set noshellslash
 	endif
@@ -74,7 +72,7 @@ endfun
 let s:mru_map = {}
 function! s:update_mru_map()
     let filepath = s:get_cache_path_mrulist()
-    if !filereadable(filepath) 
+    if !filereadable(filepath)
         return
     endif
 
@@ -88,7 +86,7 @@ function! s:clean_mru_map()
     let s:mru_map = {}
 endfunction
 
-function! s:mrulisted(file) 
+function! s:mrulisted(file)
     return has_key(s:mru_map, a:file)
 endfunction
 
@@ -137,7 +135,7 @@ function! s:get_buflist(current_buffer)
     for buf in s:proj_buf_list
         let buf = fnamemodify(buf, ":p")
         if buflisted(buf) && buf != current_buffer
-        " if buflisted(buf) 
+        " if buflisted(buf)
             call add(buf_list, fnamemodify(buf, ":p"))
         endif
     endfor
@@ -152,7 +150,7 @@ function! s:add_mru(path)
     endif
 
     let path = fnamemodify(a:path, ":p:.")
-    if path[0] == '.' || path[0] == '/' 
+    if path[0] == '.' || path[0] == '/'
         return
     endif
 
@@ -167,10 +165,10 @@ function! s:add_mru(path)
         endfor
     endif
 
-    if len(mrus) > g:lookup_file_mru_max 
-        " Delete other buffers 
+    if len(mrus) > g:lookup_file_mru_max
+        " Delete other buffers
         " let mrus_del = mrus[g:lookup_file_mru_max:]
-        " for m in mrus_del 
+        " for m in mrus_del
         "     let nr = bufnr(m)
         "     if getbufvar(nr, '&modified') == 0
         "         exe nr . 'bd'
@@ -243,116 +241,32 @@ function! s:get_cache_path_mrulist()
     return s:get_cache_dir() . 'mrulist'
 endfunction
 
+let s:plugin_path = escape(expand('<sfile>:p:h'), '\')
+
+if has('python3')
+  execute 'py3file ' . s:plugin_path . '/fileexpl.py'
+else
+  execute 'pyfile ' . s:plugin_path . '/fileexpl.py'
+endif
+
+let g:lookupfile_WildIgnore= {
+    \ 'file': ['*.sw?','~$*','*.bak','*.exe','*.o','*.so','*.py[co]'],
+    \ "dir" : [".git", ".svn"]
+    \}
+let g:lookupfile_FollowLinks=1
+let g:lookupfile_IndexTimeLimit=120
 function! s:refresh_filelist()
-	if g:is_os_windows
-		return s:refresh_filelist_windows()
-	else
-		return s:refresh_filelist_unix()
-	endif
-endfunction
+    " echoerr "fuck here"
+    let s:file_list=[]
+    let s:file_path = s:get_cache_path_filelist()
+    call writefile(s:file_list, s:file_path)
 
-function! s:refresh_filelist_windows()
-    let path = s:get_cache_path_filelist()
-	
-	" call s:system("echo '!_TAG_FILE_SORTED	2	/2=foldcase/' > " . path)
-	" let cmd = "for /r ./ %i in (*) do @echo %~nxi	%i	1 >> " . path
-	
-	call s:system("echo '' > " . path)
-	let cmd = "for /r ./ %i in (*) do @echo %i>> " . path
-	call s:system(cmd)
+    let s:dir_path= escape(fnamemodify("./", ":p"), ' \')
+    execute 'python' . (has('python3') ? '3' : '') . ' UnitePyGetFileList()'
 
-    let ignore_dirs = copy(g:lookupfile_ignore_dirs)
-    if exists("g:ignore_dirs")
-        call extend(ignore_dirs, g:ignore_dirs)
-    endif
-    let ignore_fts = copy(g:lookupfile_ignore_fts)
-    if exists("g:ignore_fts")
-        call extend(ignore_fts, g:ignore_fts)
-    endif
-
-    let files_all = readfile(path)
-    let files = []
-    for file_path in files_all
-		if file_path == "" || file_path == "''" || file_path == '""' 
-			continue
-		endif
-		
-        let is_ignore = 0
-        for ignore_dir in ignore_dirs
-            if file_path =~ ignore_dir . '\\'
-                let is_ignore = 1
-                break
-            endif
-        endfor
-
-        if is_ignore == 0 
-            let ft = '.' . fnamemodify(file_path, ":e")
-            for ignore_ft in ignore_fts
-                if ft == ignore_ft
-                    let is_ignore = 1
-                    break
-                endif
-            endfor
-        endif
-
-        if is_ignore == 0 
-            call add(files, file_path)
-        endif
-    endfor
-    call writefile(files, path)
-endfunction
-
-function! s:refresh_filelist_unix()
-    let path = s:get_cache_path_filelist()
-
-    call s:system("echo '!_TAG_FILE_SORTED	2	/2=foldcase/' > " . path)
-
-    let cmd = 'find ' . escape(fnamemodify("./", ":p"), ' \')
-
-    let ignore_dirs = copy(g:lookupfile_ignore_dirs)
-    if exists("g:ignore_dirs")
-        call extend(ignore_dirs, g:ignore_dirs)
-    endif
-    let ignore_fts = copy(g:lookupfile_ignore_fts)
-    if exists("g:ignore_fts")
-        call extend(ignore_fts, g:ignore_fts)
-    endif
-
-    let ignore_dir_cnt = len(ignore_dirs)
-    if ignore_dir_cnt > 0
-        if ignore_dir_cnt > 1
-            let cmd = cmd . ' \( '
-        endif
-
-        let ignore_dir_idx = 0
-        for ignore_dir in ignore_dirs
-            let cmd = cmd . ' -name "' . ignore_dir . '"'
-
-            let ignore_dir_idx = ignore_dir_idx + 1
-            if ignore_dir_idx < ignore_dir_cnt
-                let cmd = cmd . ' -o '
-            endif
-        endfor
-
-        for ignore_tp in ignore_fts 
-            let cmd = cmd . ' -o -name "*' . ignore_tp . '"'
-        endfor
-
-        if ignore_dir_cnt > 1
-            let cmd = cmd . ' \) '
-        endif
-
-        let cmd = cmd . ' -prune -o'
-
-        " find . \( -name '*.svn*' -prune  -o ! -name '*.html' \)
-    endif
-
-    let cmd = cmd . ' -type f -printf "%p\n" > ' . path
-    " let cmd = cmd . ' -type f -printf "%f\t%p\t1\n" >> ' . path
-
-    " echomsg cmd
-
-    call s:system(cmd)
+    " echo s:file_list
+    " echoerr "Filelist"
+    " echoerr s:file_list
 endfunction
 
 " source file
@@ -423,11 +337,11 @@ function! s:reset_context(args, context)
     "     echoerr arr[0]
     " endif
     let preType = ""
-    for key in arr 
+    for key in arr
         let keyInput = key
         let lastChar = key[len(key) - 1]
         if lastChar =~ pattern
-            if len(key) >= 2 
+            if len(key) >= 2
                 let keyInput = key[0:len(key) - 2]
             else
                 let keyInput = ""
@@ -523,7 +437,7 @@ function! s:source_filemru.gather_candidates(args, context)
         let candidates_file = []
         let candidates_mru  = s:gather_candidates_mru(a:args, a:context)
         let candidates_curr = s:gather_candidates_current_buf(a:args, a:context)
-        if len(a:context.input) > 0 
+        if len(a:context.input) > 0
             let candidates_file = s:gather_candidates_file(a:args, a:context)
         endif
 
@@ -545,7 +459,7 @@ function! s:gather_candidates_file(args, context)
     endif
 
     let refresh = 0
-    if empty(s:cached_result) 
+    if empty(s:cached_result)
         let s:cached_result = readfile(s:get_cache_path_filelist())
         let refresh = 1
     endif
@@ -556,12 +470,12 @@ function! s:gather_candidates_file(args, context)
     let inputs = split(a:context.input, ';')
 
     let input = a:context.input
-    if len(inputs) > 0 
+    if len(inputs) > 0
         let input = inputs[0]
     endif
 
     let input_dir = ""
-    if len(inputs) > 1 
+    if len(inputs) > 1
         let input_dir = inputs[1]
         echo input_dir
     endif
@@ -569,13 +483,13 @@ function! s:gather_candidates_file(args, context)
     let a:context.input = input
     let match_result = unite#filters#matcher_py_fuzzy#matcher(a:context, s:cached_result, refresh)
 
-    if len(match_result) > 150 
+    if len(match_result) > 150
         let match_result = match_result[0:149]
     endif
 
     let result = []
 
-    if len(input) < 4 
+    if len(input) < 4
         let tag_idx = 0
         while tag_idx < len(match_result)
             let file = match_result[tag_idx]
@@ -594,7 +508,7 @@ function! s:gather_candidates_file(args, context)
     endif
 
     " 需要过滤目录
-    if input_dir != "" 
+    if input_dir != ""
         let result_cp = result
         let result = []
         let fuzzy_input = unite#sources#lookup_file#get_fuzzy_pattern(input_dir)
@@ -605,7 +519,7 @@ function! s:gather_candidates_file(args, context)
             if dir =~ fuzzy_input
                 call add(result, file)
             endif
-            
+
             let tag_idx = tag_idx + 1
         endwhile
     endif
@@ -648,7 +562,7 @@ function! s:gather_candidates_mru(args, context)
     let buffers = s:get_mrulist(a:context.current_buffer)
     let match_result = unite#filters#matcher_py_fuzzy#matcher(context, buffers, 1)
 
-    if len(match_result) > 50 
+    if len(match_result) > 50
         let match_result = match_result[0:49]
     endif
 
@@ -666,7 +580,7 @@ function! s:gather_candidates_current_buf(args, context)
     let buf = a:context.current_buffer
     let buffers_filter = []
 
-    if !buflisted(buf) 
+    if !buflisted(buf)
         return []
     endif
 
