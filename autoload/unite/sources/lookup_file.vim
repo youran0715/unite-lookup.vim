@@ -252,6 +252,8 @@ function! s:refresh_filelist()
     call writefile(s:file_list, s:file_path)
 
     let s:dir_path= escape(fnamemodify("./", ":p"), ' \')
+	
+    let s:dir_path= fnamemodify("./", ":p")
     execute 'python' . (has('python3') ? '3' : '') . ' UnitePyGetFileList()'
 
     " echo s:file_list
