@@ -13,16 +13,6 @@ function! unite#sources#lookup_file#define()
     return [s:source_file, s:source_buf, s:source_filebuf, s:source_mru, s:source_filemru]
 endfunction
 
-if !exists("g:lookupfile_ignore_dirs")
-	let g:lookupfile_ignore_dirs = ['.git', '.svn', '.hg', '.vimproject',
-            \'build-*', 'target', 'vendor', 'uploads']
-endif
-
-if !exists("g:lookupfile_ignore_fts")
-	let g:lookupfile_ignore_fts = ['.o', '.dll', '.lib', '.a', '.so', '.exe', '.dep', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.pyc','.jar', '.log']
-endif
-" let g:lookupfile_ignore_fts = ['.pyc']
-
 function! s:get_cache_dir()
 	set shellslash
     let cache_dir = expand($HOME) . "/.cache/vim/"
