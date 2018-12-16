@@ -64,8 +64,7 @@ def UnitePyGetFileList():
                             for j in wildignore['file']):
                 file_list.append(lfEncode(os.path.join(dir_path,name)))
             # return
-            if time.time() - start_time > float(120):
-                    # lfEval("g:lookupfile_IndexTimeLimit")):
+            if time.time() - start_time > 120:
                 writelist2file(file_path, file_list)
                 # vim.command('echoerr "FileList:%s"' % ','.join(file_list))
                 # vim.command('let s:file_list = [%s]' % ','.join(file_list))
