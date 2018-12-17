@@ -8,6 +8,7 @@ import sys
 import time
 import os.path
 import fnmatch
+import locale
 
 lfEval = vim.eval
 
