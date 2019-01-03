@@ -8,6 +8,21 @@ if !exists("g:lookup_file_mru_max")
     let g:lookup_file_mru_max = 30
 endif
 
+if !exists("g:lookupfile_WildIgnore")
+    let g:lookupfile_WildIgnore= {
+        \ 'file': ['*.sw?','~$*','*.bak','*.exe','*.o','*.so','*.py[co]'],
+        \ "dir" : [".git", ".svn"]
+        \}
+endif
+
+if !exists("g:lookupfile_FollowLinks")
+    let g:lookupfile_FollowLinks=1
+endif
+
+if !exists("g:lookupfile_IndexTimeLimit")
+    let g:lookupfile_IndexTimeLimit=120
+endif
+
 " define source
 function! unite#sources#lookup_file#define()
     return [s:source_file, s:source_buf, s:source_filebuf, s:source_mru, s:source_filemru]
@@ -239,20 +254,13 @@ else
   execute 'pyfile ' . s:plugin_path . '/fileexpl.py'
 endif
 
-let g:lookupfile_WildIgnore= {
-    \ 'file': ['*.sw?','~$*','*.bak','*.exe','*.o','*.so','*.py[co]'],
-    \ "dir" : [".git", ".svn"]
-    \}
-let g:lookupfile_FollowLinks=1
-let g:lookupfile_IndexTimeLimit=120
 function! s:refresh_filelist()
-    " echoerr "fuck here"
     let s:file_list=[]
     let s:file_path = s:get_cache_path_filelist()
     call writefile(s:file_list, s:file_path)
 
     let s:dir_path= escape(fnamemodify("./", ":p"), ' \')
-	
+
     let s:dir_path= fnamemodify("./", ":p")
     execute 'python' . (has('python3') ? '3' : '') . ' UnitePyGetFileList()'
 
