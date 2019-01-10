@@ -477,7 +477,7 @@ function! s:gather_candidates_file(args, context)
     endif
 
     let a:context.input = input
-    let match_result = unite#filters#matcher_py_fuzzy#matcher(a:context, s:cached_result, 100)
+    let match_result = unite#filters#matcher_py_fuzzy#matcher(a:context, s:cached_result, g:lookup_file_max_candidates)
 
     let result = []
 
