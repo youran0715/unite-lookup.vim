@@ -369,7 +369,6 @@ function! s:source_file.hooks.on_init(args, context)
 endfunction
 
 function! s:source_file.hooks.on_close(args, context)
-    call unite#filters#matcher_py_fuzzy#clean(a:context)
 endfunction
 
 function! s:source_filebuf.hooks.on_init(args, context)
@@ -379,7 +378,6 @@ function! s:source_filebuf.hooks.on_init(args, context)
 endfunction
 
 function! s:source_filebuf.hooks.on_close(args, context)
-    call unite#filters#matcher_py_fuzzy#clean(a:context)
 endfunction
 
 function! s:source_filemru.hooks.on_init(args, context)
@@ -390,7 +388,6 @@ function! s:source_filemru.hooks.on_init(args, context)
 endfunction
 
 function! s:source_filemru.hooks.on_close(args, context)
-    call unite#filters#matcher_py_fuzzy#clean(a:context)
     call s:clean_mru_map()
 endfunction
 
@@ -477,15 +474,10 @@ function! s:gather_candidates_file(args, context)
     let input_dir = ""
     if len(inputs) > 1
         let input_dir = inputs[1]
-        echo input_dir
     endif
 
     let a:context.input = input
-    let match_result = unite#filters#matcher_py_fuzzy#matcher(a:context, s:cached_result, refresh)
-
-    if len(match_result) > 150
-        let match_result = match_result[0:149]
-    endif
+    let match_result = unite#filters#matcher_py_fuzzy#matcher(a:context, s:cached_result, 100)
 
     let result = []
 
@@ -543,7 +535,7 @@ function! s:gather_candidates_buf(args, context)
     let context.source_name = "lookup/buf"
 
     let buffers = s:get_buflist(a:context.current_buffer)
-    let buffers_filter = unite#filters#matcher_py_fuzzy#matcher(context, buffers, 1)
+    let buffers_filter = unite#filters#matcher_py_fuzzy#matcher(context, buffers, 20)
 
     return map(buffers_filter, "{
           \ 'word': fnamemodify(v:val, ':t'),
@@ -560,7 +552,7 @@ function! s:gather_candidates_mru(args, context)
     let context.source_name = "lookup/mru"
 
     let buffers = s:get_mrulist(a:context.current_buffer)
-    let match_result = unite#filters#matcher_py_fuzzy#matcher(context, buffers, 1)
+    let match_result = unite#filters#matcher_py_fuzzy#matcher(context, buffers, 20)
 
     if len(match_result) > 50
         let match_result = match_result[0:49]

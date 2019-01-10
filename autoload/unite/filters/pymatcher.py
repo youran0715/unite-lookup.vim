@@ -8,7 +8,7 @@ def UnitePyMatch():
     items = vim.eval('s:items')
     astr = vim.eval('s:input')
     lowAstr = astr.lower()
-    limit = len(items)
+    limit = int(vim.eval('s:limit'))
     mmode = vim.eval('s:mmode')
 
     rez = vim.eval('s:rez')
