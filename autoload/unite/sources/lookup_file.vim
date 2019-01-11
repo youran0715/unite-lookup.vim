@@ -467,10 +467,10 @@ function! s:gather_candidates_file(args, context)
         let input = inputs[0]
     endif
 
-    let input_dir = ""
-    if len(inputs) > 1
-        let input_dir = inputs[1]
-    endif
+    " let input_dir = ""
+    " if len(inputs) > 1
+    "     let input_dir = inputs[1]
+    " endif
 
     let a:context.input = input
     let match_result = unite#filters#matcher_py_fuzzy#matcher(a:context, s:cached_result, g:lookup_file_max_candidates)
@@ -479,7 +479,7 @@ function! s:gather_candidates_file(args, context)
 
     let tag_idx = 0
     while tag_idx < len(match_result)
-        let file = match_result[tag_idx]
+        let file = fnamemodify(match_result[tag_idx], ":p")
         if   (a:context.exclude_buffer && buflisted(file))
         \ || (a:context.exclude_mru && s:mrulisted(file))
             let tag_idx = tag_idx + 1
@@ -492,21 +492,21 @@ function! s:gather_candidates_file(args, context)
     endwhile
 
     " 需要过滤目录
-    if input_dir != ""
-        let result_cp = result
-        let result = []
-        let fuzzy_input = unite#sources#lookup_file#get_fuzzy_pattern(input_dir)
-        let tag_idx = 0
-        while tag_idx < len(match_result)
-            let file = match_result[tag_idx]
-            let dir = fnamemodify(file, ":.:h")
-            if dir =~ fuzzy_input
-                call add(result, file)
-            endif
-
-            let tag_idx = tag_idx + 1
-        endwhile
-    endif
+    " if input_dir != ""
+    "     let result_cp = result
+    "     let result = []
+    "     let fuzzy_input = unite#sources#lookup_file#get_fuzzy_pattern(input_dir)
+    "     let tag_idx = 0
+    "     while tag_idx < len(match_result)
+    "         let file = match_result[tag_idx]
+    "         let dir = fnamemodify(file, ":.:h")
+    "         if dir =~ fuzzy_input
+    "             call add(result, file)
+    "         endif
+    "
+    "         let tag_idx = tag_idx + 1
+    "     endwhile
+    " endif
 
     return map(result, "{
           \ 'word': v:val,
@@ -545,10 +545,6 @@ function! s:gather_candidates_mru(args, context)
 
     let buffers = s:get_mrulist(a:context.current_buffer)
     let match_result = unite#filters#matcher_py_fuzzy#matcher(context, buffers, g:lookup_file_mru_max)
-
-    if len(match_result) > 50
-        let match_result = match_result[0:49]
-    endif
 
     let result = map(match_result, "{
           \ 'word': fnamemodify(v:val, ':t'),
