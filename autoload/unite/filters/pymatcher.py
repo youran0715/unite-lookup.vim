@@ -84,20 +84,17 @@ def UnitePyMatch():
 
     rez = vim.eval('s:rez')
 
-    strDir = ""
-    strKws = ""
-    kws = []
     kwsAndDirs = strInput.split(';')
+    strKws = kwsAndDirs[0] if len(kwsAndDirs) > 0 else ""
+    strDir = kwsAndDirs[1] if len(kwsAndDirs) > 1 else ""
 
-    if len(kwsAndDirs) > 0:
-        strKws = kwsAndDirs[0]
-
-    if len(kwsAndDirs) > 1:
-        strDir = kwsAndDirs[1]
-
-    kws = strKws.split()
-    kws = [kw for kw in kws if kw != ""]
+    kws = [kw for kw in strKws.split() if kw != ""]
     rows = [line.lower() for line in items]
+
+    if strDir != "":
+        progDir = get_regex_prog(strDir)
+        rows = [ row for row in rows if progDir.search(os.path.dirname(row))]
+
     rez = Match(kws, rows, mmode, limit)
 
     # Use double quoted vim strings and escape \
