@@ -430,21 +430,17 @@ endfunction
 function! s:source_filemru.gather_candidates(args, context)
     let a:context.mmode = "filename-only"
 
-    if len(a:context.input) < 4
-        let candidates_file = []
-        let candidates_mru  = s:gather_candidates_mru(a:args, a:context)
-        let candidates_curr = s:gather_candidates_current_buf(a:args, a:context)
-        if len(a:context.input) > 0
-            let candidates_file = s:gather_candidates_file(a:args, a:context)
-        endif
-
-        let result = extend(candidates_mru, candidates_curr)
-        let result = extend(result, candidates_file)
-
-        return result
-    else
-        return s:gather_candidates_file(a:args, a:context)
+    let candidates_file = []
+    let candidates_mru  = s:gather_candidates_mru(a:args, a:context)
+    let candidates_curr = s:gather_candidates_current_buf(a:args, a:context)
+    if len(a:context.input) > 0
+        let candidates_file = s:gather_candidates_file(a:args, a:context)
     endif
+
+    let result = extend(candidates_mru, candidates_curr)
+    let result = extend(result, candidates_file)
+
+    return result
 endfunction
 
 let s:cached_result = []
@@ -481,23 +477,19 @@ function! s:gather_candidates_file(args, context)
 
     let result = []
 
-    if len(input) < 4
-        let tag_idx = 0
-        while tag_idx < len(match_result)
-            let file = match_result[tag_idx]
-            if   (a:context.exclude_buffer && buflisted(file))
-            \ || (a:context.exclude_mru && s:mrulisted(file))
-                let tag_idx = tag_idx + 1
-                continue
-            endif
-
-            call add(result, file)
-
+    let tag_idx = 0
+    while tag_idx < len(match_result)
+        let file = match_result[tag_idx]
+        if   (a:context.exclude_buffer && buflisted(file))
+        \ || (a:context.exclude_mru && s:mrulisted(file))
             let tag_idx = tag_idx + 1
-        endwhile
-    else
-        let result = match_result
-    endif
+            continue
+        endif
+
+        call add(result, file)
+
+        let tag_idx = tag_idx + 1
+    endwhile
 
     " 需要过滤目录
     if input_dir != ""
@@ -535,7 +527,7 @@ function! s:gather_candidates_buf(args, context)
     let context.source_name = "lookup/buf"
 
     let buffers = s:get_buflist(a:context.current_buffer)
-    let buffers_filter = unite#filters#matcher_py_fuzzy#matcher(context, buffers, 20)
+    let buffers_filter = unite#filters#matcher_py_fuzzy#matcher(context, buffers, g:lookup_file_mru_max)
 
     return map(buffers_filter, "{
           \ 'word': fnamemodify(v:val, ':t'),
@@ -552,7 +544,7 @@ function! s:gather_candidates_mru(args, context)
     let context.source_name = "lookup/mru"
 
     let buffers = s:get_mrulist(a:context.current_buffer)
-    let match_result = unite#filters#matcher_py_fuzzy#matcher(context, buffers, 20)
+    let match_result = unite#filters#matcher_py_fuzzy#matcher(context, buffers, g:lookup_file_mru_max)
 
     if len(match_result) > 50
         let match_result = match_result[0:49]
@@ -560,7 +552,7 @@ function! s:gather_candidates_mru(args, context)
 
     let result = map(match_result, "{
           \ 'word': fnamemodify(v:val, ':t'),
-          \ 'abbr': printf('%s', fnamemodify(v:val, ':p:.')),
+          \ 'abbr': printf('[M] %s', fnamemodify(v:val, ':p:.')),
           \ 'kind'  : 'file',
           \ 'group' : 'file',
           \ 'action__path': v:val,
