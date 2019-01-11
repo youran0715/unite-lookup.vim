@@ -13,22 +13,20 @@ def filename_score(reprog, line):
     if slashPos != -1:
         line = line[slashPos + 1:]
 
-    lineLower = line.lower()
-    result = reprog.search(lineLower)
+    result = reprog.search(line)
     if result:
         score = result.end() - result.start() + 1
-        score = score + ( len(lineLower) + 1 ) / 100.0
+        score = score + ( len(line) + 1 ) / 100.0
         score = score + ( len(line) + 1 ) / 1000.0
         return 1000.0 / score
 
     return 0
 
 def path_score(reprog, line):
-    lineLower = line.lower()
-    result = reprog.search(lineLower)
+    result = reprog.search(line)
     if result:
         score = result.end() - result.start() + 1
-        score = score + ( len(lineLower) + 1 ) / 100.0
+        score = score + ( len(line) + 1 ) / 100.0
         return 1000.0 / score
 
     return 0
@@ -40,7 +38,8 @@ def Match(kw, rows, mode, limit):
     escaped = [_escape.get(c, c) for c in lowKw]
     if len(lowKw) > 1:
         regex = ''.join([c + "[^" + c + "]*" for c in escaped[:-1]])
-        regex += escaped[-1]
+
+    regex += escaped[-1]
 
     regex = regex.lower()
     res = []
@@ -62,7 +61,24 @@ def UnitePyMatch():
     mmode = vim.eval('s:mmode')
 
     rez = vim.eval('s:rez')
-    rez = Match(strInput, items, mmode, limit)
+
+    strDir = ""
+    strKws = ""
+    kws = []
+    kwsAndDirs = strInput.split(';')
+
+    if len(kwsAndDirs) > 0:
+        strKws = kwsAndDirs[0]
+
+    if len(kwsAndDirs) > 1:
+        strDir = kwsAndDirs[1]
+
+    kws = strKws.split()
+    rows = [line.lower() for line in items]
+    for kw in kws:
+        rows = Match(kw, rows, mmode, limit)
+
+    rez = rows
 
     # Use double quoted vim strings and escape \
     vimrez = ['"' + line.replace('\\', '\\\\').replace('"', '\\"') + '"' for line in rez]
