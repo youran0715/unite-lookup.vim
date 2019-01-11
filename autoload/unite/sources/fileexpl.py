@@ -44,7 +44,7 @@ else: # python 2.x
 def writelist2file(file_path, file_list):
     with open(file_path, 'w') as f:
         for item in file_list:
-            f.write("%s\n" % item)
+            f.write("%s\n" % os.path.relpath(item))
         f.close()
 
 def UnitePyGetFileList():
@@ -54,6 +54,7 @@ def UnitePyGetFileList():
     # dir_path = "./"
     start_time = time.time()
     wildignore = lfEval("g:lookupfile_WildIgnore")
+
     # wildignore = {"dir":[], "file":[]}
     file_list = []
     for dir_path, dirs, files in os.walk(dir_path, followlinks = False
@@ -64,7 +65,6 @@ def UnitePyGetFileList():
             if True not in (fnmatch.fnmatch(name, j)
                             for j in wildignore['file']):
                 file_list.append(lfEncode(os.path.join(dir_path,name)))
-            # return
             if time.time() - start_time > 120:
                 writelist2file(file_path, file_list)
                 # vim.command('echoerr "FileList:%s"' % ','.join(file_list))
