@@ -31,7 +31,16 @@ def path_score(reprog, line):
 
     return 0
 
-def Match(kw, rows, mode, limit):
+def dir_score(reprog, line):
+    result = reprog.search(line)
+    if result:
+        score = result.end() - result.start() + 1
+        score = score + ( len(line) + 1 ) / 100.0
+        return 1000.0 / score
+
+    return 0
+
+def get_regex_prog(kw):
     lowKw = kw.lower()
     regex = ''
     # Escape all of the characters as necessary
@@ -42,14 +51,27 @@ def Match(kw, rows, mode, limit):
     regex += escaped[-1]
 
     regex = regex.lower()
+    return re.compile(regex)
+
+def Match(kws, rows, mode, limit):
+    progs = [ get_regex_prog(kw) for kw in kws ]
+
     res = []
     rez = []
-    prog = re.compile(regex)
 
-    if mode == 'filename-only':
-        res = [(filename_score(prog, line), line) for line in rows]
-    else:
-        res = [(path_score(prog, line), line) for line in rows]
+    for row in rows:
+        scoreTotal = 0.0
+        for prog in progs:
+            score = filename_score(prog, row) if mode == 'filename-only' else path_score(prog, row)
+
+            if score == 0:
+                scoreTotal = 0
+                break
+            else:
+                scoreTotal+=score
+
+        if scoreTotal != 0:
+            res.append((scoreTotal, row))
 
     rez.extend([line for score, line in heapq.nlargest(limit, res) if score != 0])
     return rez
@@ -74,11 +96,9 @@ def UnitePyMatch():
         strDir = kwsAndDirs[1]
 
     kws = strKws.split()
+    kws = [kw for kw in kws if kw != ""]
     rows = [line.lower() for line in items]
-    for kw in kws:
-        rows = Match(kw, rows, mmode, limit)
-
-    rez = rows
+    rez = Match(kws, rows, mmode, limit)
 
     # Use double quoted vim strings and escape \
     vimrez = ['"' + line.replace('\\', '\\\\').replace('"', '\\"') + '"' for line in rez]
