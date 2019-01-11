@@ -21,7 +21,7 @@ function! unite#filters#matcher_py_fuzzy#matcher(context, items, limit) abort "{
     let s:limit = a:limit
 
     if s:input == ""
-        return a:items
+        return a:items[:a:limit - 1]
     endif
 
     let s:rez = []

@@ -5,13 +5,13 @@ if !exists("g:lookup_file_min_input")
     let g:lookup_file_min_input = 3
 endif
 if !exists("g:lookup_file_mru_max")
-    let g:lookup_file_mru_max = 30
+    let g:lookup_file_mru_max = 50
 endif
 
 if !exists("g:lookupfile_WildIgnore")
     let g:lookupfile_WildIgnore= {
         \ 'file': ['*.sw?','~$*','*.bak','*.exe','*.o','*.so','*.py[co]'],
-        \ "dir" : [".git", ".svn"]
+        \ "dir" : [".git", ".svn", ".hg", "node_modules"]
         \}
 endif
 

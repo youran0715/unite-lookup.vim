@@ -82,8 +82,6 @@ def UnitePyMatch():
     limit = int(vim.eval('s:limit'))
     mmode = vim.eval('s:mmode')
 
-    rez = vim.eval('s:rez')
-
     kwsAndDirs = strInput.split(';')
     strKws = kwsAndDirs[0] if len(kwsAndDirs) > 0 else ""
     strDir = kwsAndDirs[1] if len(kwsAndDirs) > 1 else ""
@@ -95,9 +93,13 @@ def UnitePyMatch():
         progDir = get_regex_prog(strDir)
         rows = [ row for row in rows if progDir.search(os.path.dirname(row))]
 
-    rez = Match(kws, rows, mmode, limit)
+    if len(kws) > 0:
+        rows = Match(kws, rows, mmode, limit)
+
+    if len(rows) > limit:
+        rows = rows[:limit]
 
     # Use double quoted vim strings and escape \
-    vimrez = ['"' + line.replace('\\', '\\\\').replace('"', '\\"') + '"' for line in rez]
+    vimrez = ['"' + line.replace('\\', '\\\\').replace('"', '\\"') + '"' for line in rows]
 
     vim.command('let s:rez = [%s]' % ','.join(vimrez))
