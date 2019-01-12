@@ -65,7 +65,7 @@ function! s:get_mrulist(current_buffer)
     let mrulist = []
     for line in readfile(filepath)
         if filereadable(line) && a:current_buffer != line
-            call add(mrulist, line)
+            call add(mrulist, fnamemodify(line, ":."))
         endif
     endfor
 

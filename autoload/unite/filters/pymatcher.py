@@ -32,7 +32,7 @@ def path_score(reprog, line):
     return 0
 
 def dir_score(reprog, line):
-    result = reprog.search(line)
+    result = reprog.search(os.path.dirname(line))
     if result:
         score = result.end() - result.start() + 1
         score = score + ( len(line) + 1 ) / 100.0
@@ -53,16 +53,21 @@ def get_regex_prog(kw):
     regex = regex.lower()
     return re.compile(regex)
 
-def Match(kws, rows, mode, limit):
-    progs = [ get_regex_prog(kw) for kw in kws ]
-
+def Match(opts, rows, limit):
     res = []
     rez = []
 
     for row in rows:
         scoreTotal = 0.0
-        for prog in progs:
-            score = filename_score(prog, row) if mode == 'filename-only' else path_score(prog, row)
+        for kw, prog, mode in opts:
+            score = 0.0
+
+            if mode == 'filename-only':
+                score = filename_score(prog, row)
+            elif mode == 'dir':
+                score = dir_score(prog, row)
+            else:
+                score = path_score(prog, row)
 
             if score == 0:
                 scoreTotal = 0
@@ -82,24 +87,23 @@ def UnitePyMatch():
     limit = int(vim.eval('s:limit'))
     mmode = vim.eval('s:mmode')
 
+    rows = [line.lower() for line in items]
+
     kwsAndDirs = strInput.split(';')
     strKws = kwsAndDirs[0] if len(kwsAndDirs) > 0 else ""
     strDir = kwsAndDirs[1] if len(kwsAndDirs) > 1 else ""
 
-    kws = [kw for kw in strKws.split() if kw != ""]
-    rows = [line.lower() for line in items]
+    opts = [(kw, get_regex_prog(kw), mmode) for kw in strKws.split() if kw != ""]
 
     if strDir != "":
-        progDir = get_regex_prog(strDir)
-        rows = [ row for row in rows if progDir.search(os.path.dirname(row))]
+        opts.append((strDir, get_regex_prog(strDir), 'dir'))
 
-    if len(kws) > 0:
-        rows = Match(kws, rows, mmode, limit)
+    if len(opts) > 0:
+        rows = Match(opts, rows, limit)
 
     if len(rows) > limit:
         rows = rows[:limit]
 
     # Use double quoted vim strings and escape \
     vimrez = ['"' + line.replace('\\', '\\\\').replace('"', '\\"') + '"' for line in rows]
-
     vim.command('let s:rez = [%s]' % ','.join(vimrez))
