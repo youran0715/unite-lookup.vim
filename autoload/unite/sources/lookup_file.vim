@@ -132,7 +132,7 @@ function! s:get_cache_path_filelist()
 endfunction
 
 function! s:get_cache_path_mrulist()
-    return s:get_cache_dir() . 'mrulist'
+    return s:get_cache_dir() . 'mrulist2'
 endfunction
 
 let s:plugin_path = escape(expand('<sfile>:p:h'), '\')
