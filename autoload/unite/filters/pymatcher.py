@@ -96,8 +96,8 @@ def UnitePyMatch():
     inputs = vim.eval('s:input')
     limit = int(vim.eval('s:limit'))
     mmode = vim.eval('s:mmode')
-    # isregex = True
-    isregex = False
+    isregex = True
+    # isregex = False
     smartcase = True
 
     # rows = [line.lower() for line in items]
