@@ -4,21 +4,17 @@ import platform;
 
 _escape = dict((c , "\\" + c) for c in ['^','$','.','{','}','(',')','[',']','\\','/','+'])
 
-def filename_score(reprog, line):
+def filename_score(reprog, path, slash):
     # get filename via reverse find to improve performance
-    slashPos = line.rfind('/')
-    if platform.system() == "Windows":
-        slashPos = line.rfind('\\')
+    slashPos = path.rfind(slash)
+    filename = path[slashPos + 1:] if slashPos != -1 else path
 
-    if slashPos != -1:
-        line = line[slashPos + 1:]
-
-    result = reprog.search(line)
+    result = reprog.search(filename)
     if result:
         score = result.start() * 2
         score = score + result.end() - result.start() + 1
-        score = score + ( len(line) + 1 ) / 100.0
-        score = score + ( len(line) + 1 ) / 1000.0
+        score = score + ( len(filename) + 1 ) / 100.0
+        score = score + ( len(path) + 1 ) / 1000.0
         return 1000.0 / score
 
     return 0
@@ -58,6 +54,8 @@ def Match(opts, rows, limit):
     res = []
     rez = []
 
+    slash = '/' if platform.system() != "Windows" else '\\'
+
     for row in rows:
         line = row.lower()
         scoreTotal = 0.0
@@ -65,7 +63,7 @@ def Match(opts, rows, limit):
             score = 0.0
 
             if mode == 'filename-only':
-                score = filename_score(prog, line)
+                score = filename_score(prog, line, slash)
             elif mode == 'dir':
                 score = dir_score(prog, line)
             else:
