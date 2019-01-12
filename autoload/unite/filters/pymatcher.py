@@ -37,27 +37,37 @@ def dir_score(reprog, line):
 
     return 0
 
-def get_regex_prog(kw):
-    lowKw = kw.lower()
+def contain_upper(kw):
+    prog = re.compile('[A-Z]+')
+    return prog.search(kw)
+
+def is_search_lower(kw):
+    return False if contain_upper(kw) else True
+
+def get_regex_prog(kw, isregex, islower):
+    searchkw = kw.lower() if islower else kw
+
     regex = ''
     # Escape all of the characters as necessary
-    escaped = [_escape.get(c, c) for c in lowKw]
-    if len(lowKw) > 1:
-        regex = ''.join([c + "[^" + c + "]*" for c in escaped[:-1]])
+    escaped = [_escape.get(c, c) for c in searchkw]
 
-    regex += escaped[-1]
+    if isregex:
+        if len(searchkw) > 1:
+            regex = ''.join([c + "[^" + c + "]*" for c in escaped[:-1]])
+        regex += escaped[-1]
+    else:
+        regex = ''.join(escaped)
 
-    regex = regex.lower()
     return re.compile(regex)
 
-def Match(opts, rows, limit):
+def Match(opts, rows, limit, islower):
     res = []
     rez = []
 
     slash = '/' if platform.system() != "Windows" else '\\'
 
     for row in rows:
-        line = row.lower()
+        line = row.lower() if islower else row
         scoreTotal = 0.0
         for kw, prog, mode in opts:
             score = 0.0
@@ -83,24 +93,29 @@ def Match(opts, rows, limit):
 
 def UnitePyMatch():
     items = vim.eval('s:items')
-    strInput = vim.eval('s:input')
+    inputs = vim.eval('s:input')
     limit = int(vim.eval('s:limit'))
     mmode = vim.eval('s:mmode')
+    # isregex = True
+    isregex = False
+    smartcase = True
 
     # rows = [line.lower() for line in items]
     rows = items
 
-    kwsAndDirs = strInput.split(';')
+    kwsAndDirs = inputs.split(';')
     strKws = kwsAndDirs[0] if len(kwsAndDirs) > 0 else ""
     strDir = kwsAndDirs[1] if len(kwsAndDirs) > 1 else ""
 
-    opts = [(kw, get_regex_prog(kw), mmode) for kw in strKws.split() if kw != ""]
+    islower = is_search_lower(inputs)
+
+    opts = [(kw, get_regex_prog(kw, isregex, islower), mmode) for kw in strKws.split() if kw != ""]
 
     if strDir != "":
-        opts.append((strDir, get_regex_prog(strDir), 'dir'))
+        opts.append((strDir, get_regex_prog(strDir, isregex, islower), 'dir'))
 
     if len(opts) > 0:
-        rows = Match(opts, rows, limit)
+        rows = Match(opts, rows, limit, islower)
 
     if len(rows) > limit:
         rows = rows[:limit]
