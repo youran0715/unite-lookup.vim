@@ -260,6 +260,7 @@ function! s:gather_candidates_file(args, context)
     let tag_idx = 0
     while tag_idx < len(match_result)
         let file = fnamemodify(match_result[tag_idx], ":p")
+        " let file = match_result[tag_idx]
         if (a:context.exclude_mru && s:mrulisted(file))
             let tag_idx = tag_idx + 1
             continue

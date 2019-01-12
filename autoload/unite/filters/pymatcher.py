@@ -59,16 +59,17 @@ def Match(opts, rows, limit):
     rez = []
 
     for row in rows:
+        line = row.lower()
         scoreTotal = 0.0
         for kw, prog, mode in opts:
             score = 0.0
 
             if mode == 'filename-only':
-                score = filename_score(prog, row)
+                score = filename_score(prog, line)
             elif mode == 'dir':
-                score = dir_score(prog, row)
+                score = dir_score(prog, line)
             else:
-                score = path_score(prog, row)
+                score = path_score(prog, line)
 
             if score == 0:
                 scoreTotal = 0
@@ -88,7 +89,8 @@ def UnitePyMatch():
     limit = int(vim.eval('s:limit'))
     mmode = vim.eval('s:mmode')
 
-    rows = [line.lower() for line in items]
+    # rows = [line.lower() for line in items]
+    rows = items
 
     kwsAndDirs = strInput.split(';')
     strKws = kwsAndDirs[0] if len(kwsAndDirs) > 0 else ""
