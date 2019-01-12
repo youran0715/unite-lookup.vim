@@ -15,7 +15,8 @@ def filename_score(reprog, line):
 
     result = reprog.search(line)
     if result:
-        score = result.end() - result.start() + 1
+        score = result.start() * 2
+        score = score + result.end() - result.start() + 1
         score = score + ( len(line) + 1 ) / 100.0
         score = score + ( len(line) + 1 ) / 1000.0
         return 1000.0 / score
