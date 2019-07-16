@@ -60,9 +60,8 @@ def get_regex_prog(kw, isregex, islower):
 
     return re.compile(regex)
 
-def Match(opts, rows, limit, islower):
+def Match(opts, rows, islower):
     res = []
-    rez = []
 
     slash = '/' if platform.system() != "Windows" else '\\'
 
@@ -88,7 +87,16 @@ def Match(opts, rows, limit, islower):
         if scoreTotal != 0:
             res.append((scoreTotal, row))
 
-    rez.extend([line for score, line in heapq.nlargest(limit, res) if score != 0])
+    return res
+
+def GetFilterRows(rowsWithScore):
+    rez = []
+    rez.extend([line for score, line in rowsWithScore])
+    return rez
+
+def Sort(rowsWithScore, limit):
+    rez = []
+    rez.extend([line for score, line in heapq.nlargest(limit, rowsWithScore) if score != 0])
     return rez
 
 def UnitePyMatch():
@@ -102,6 +110,7 @@ def UnitePyMatch():
 
     # rows = [line.lower() for line in items]
     rows = items
+    rowsFilter = items
 
     kwsAndDirs = inputs.split(';')
     strKws = kwsAndDirs[0] if len(kwsAndDirs) > 0 else ""
@@ -115,11 +124,14 @@ def UnitePyMatch():
         opts.append((strDir, get_regex_prog(strDir, isregex, islower), 'dir'))
 
     if len(opts) > 0:
-        rows = Match(opts, rows, limit, islower)
+        rowsWithScore = Match(opts, rows, islower)
+        rowsFilter = GetFilterRows(rowsWithScore)
+        rows = Sort(rowsWithScore, limit)
 
     if len(rows) > limit:
         rows = rows[:limit]
 
-    # Use double quoted vim strings and escape \
     vimrez = ['"' + line.replace('\\', '\\\\').replace('"', '\\"') + '"' for line in rows]
+    vimrows = ['"' + line.replace('\\', '\\\\').replace('"', '\\"') + '"' for line in rowsFilter]
     vim.command('let s:rez = [%s]' % ','.join(vimrez))
+    vim.command('let s:rows = [%s]' % ','.join(vimrows))

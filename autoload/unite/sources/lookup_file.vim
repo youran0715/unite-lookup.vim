@@ -81,7 +81,8 @@ function! s:update_mru_map()
 
     let s:mru_map = {}
     for line in readfile(filepath)
-        let s:mru_map[line] = 1
+        let rpath = fnamemodify(line, ":p:.")
+        let s:mru_map[rpath] = 1
     endfor
 endfun
 
@@ -221,6 +222,8 @@ function! s:source_mru.hooks.on_init(args, context)
 endfunction
 
 function! s:gather_candidates_current_buf(args, context)
+    let a:context.cache_type = "lookup_curr_buf"
+
     let buf = a:context.current_buffer
 
     if !buflisted(buf) | return [] | endif
@@ -244,6 +247,8 @@ endfunction
 
 let s:cached_result = []
 function! s:gather_candidates_file(args, context)
+    let a:context.cache_type = "lookup_file"
+
     if a:context.is_redraw || !filereadable(s:get_cache_path_filelist())
         call s:refresh_filelist()
         let s:cached_result = []
@@ -259,8 +264,8 @@ function! s:gather_candidates_file(args, context)
 
     let tag_idx = 0
     while tag_idx < len(match_result)
-        let file = fnamemodify(match_result[tag_idx], ":p")
-        " let file = match_result[tag_idx]
+        " let file = fnamemodify(match_result[tag_idx], ":p")
+        let file = match_result[tag_idx]
         if (a:context.exclude_mru && s:mrulisted(file))
             let tag_idx = tag_idx + 1
             continue
@@ -275,6 +280,7 @@ function! s:gather_candidates_file(args, context)
 endfunction
 
 function! s:gather_candidates_mru(args, context)
+    let a:context.cache_type = "lookup_mru"
     return s:map_result(s:get_result(a:context, s:get_mrulist(a:context.current_buffer)), '[M]')
 endfunction
 
