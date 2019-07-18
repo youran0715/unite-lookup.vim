@@ -1,8 +1,10 @@
-import vim, re
+# import vim
+import re
 import heapq
 import platform;
 
 _escape = dict((c , "\\" + c) for c in ['^','$','.','{','}','(',')','[',']','\\','/','+'])
+
 
 def filename_score(reprog, path, slash):
     # get filename via reverse find to improve performance
@@ -99,14 +101,95 @@ def Sort(rowsWithScore, limit):
     rez.extend([line for score, line in heapq.nlargest(limit, rowsWithScore) if score != 0])
     return rez
 
-def UnitePyMatch():
+def vimecho(msg):
+    vim.eval("echo " + msg)
+
+candidates = {}
+def setCandidates(key, items):
+    candidates[key] = items
+
+def loadCandidates(key, path):
+    items = []
+    setCandidates(key, items)
+
+def SetCandidates():
+    key = vim.eval('s:key')
     items = vim.eval('s:items')
+
+    setCandidates(key, items)
+
+def LoadCandidates():
+    key = vim.eval('s:key')
+    path = vim.eval('s:path')
+
+    loadCandidates(key, path)
+
+candidatesCache = {}
+def ClearCache():
+    candidatesCache = {}
+
+def getCacheKey(key, inputs):
+    return key + "@" + inputs
+
+def setCandidatesToCache(key, inputs, items):
+    candidatesCache[getCacheKey(key, inputs)] = items
+
+def getCandidatesFromCache(key, inputs):
+    # print("get from cache, key:" + key + " inputs:" + inputs)
+    return candidatesCache.get(getCacheKey(key, inputs), [])
+
+def getCandidates(key, inputs):
+    items = []
+    if len(inputs) <= 1: #没有输入或输入为空 返回全部候选集
+        items = candidates.get(key, [])
+    else:
+        inputsCache = inputs[:-1]
+        items = getCandidatesFromCache(key, inputsCache)
+
+    return items
+
+def uniteMatch(key, inputs, limit, mmode):
+    isregex = True
+    smartcase = True
+
+    items = getCandidates(key, inputs)
+
+    rows = items
+    rowsFilter = items
+
+    kwsAndDirs = inputs.split(';')
+    strKws = kwsAndDirs[0] if len(kwsAndDirs) > 0 else ""
+    strDir = kwsAndDirs[1] if len(kwsAndDirs) > 1 else ""
+
+    islower = is_search_lower(inputs)
+
+    opts = [(kw, get_regex_prog(kw, isregex, islower), mmode) for kw in strKws.split() if kw != ""]
+
+    if strDir != "":
+        opts.append((strDir, get_regex_prog(strDir, isregex, islower), 'dir'))
+
+    if len(opts) > 0:
+        rowsWithScore = Match(opts, rows, islower)
+        rowsFilter = GetFilterRows(rowsWithScore)
+        setCandidatesToCache(key, inputs, rowsFilter)
+        rows = Sort(rowsWithScore, limit)
+
+    if len(rows) > limit:
+        rows = rows[:limit]
+
+    return rows
+
+def UnitePyMatch():
+    # items = vim.eval('s:items')
     inputs = vim.eval('s:input')
     limit = int(vim.eval('s:limit'))
     mmode = vim.eval('s:mmode')
+    key = vim.eval('s:key')
     isregex = True
     # isregex = False
     smartcase = True
+
+    items = getCandidates(key, inputs)
 
     # rows = [line.lower() for line in items]
     rows = items
@@ -126,6 +209,7 @@ def UnitePyMatch():
     if len(opts) > 0:
         rowsWithScore = Match(opts, rows, islower)
         rowsFilter = GetFilterRows(rowsWithScore)
+        setCandidatesToCache(key, inputs, rowsFilter)
         rows = Sort(rowsWithScore, limit)
 
     if len(rows) > limit:
@@ -135,3 +219,17 @@ def UnitePyMatch():
     vimrows = ['"' + line.replace('\\', '\\\\').replace('"', '\\"') + '"' for line in rowsFilter]
     vim.command('let s:rez = [%s]' % ','.join(vimrez))
     vim.command('let s:rows = [%s]' % ','.join(vimrows))
+
+def main():
+    items = ["aaa", "bbb", "ccc", "abc", "aba", "abababa", "acbacb"]
+    key = "test"
+    setCandidates(key, items)
+    res = uniteMatch(key, "a", 10, "filename-only")
+    print(res)
+    res = uniteMatch(key, "ab", 10, "filename-only")
+    print(res)
+    res = uniteMatch(key, "abc", 10, "filename-only")
+    print(res)
+
+if __name__ == "__main__":
+    main()

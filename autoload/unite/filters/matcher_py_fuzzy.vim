@@ -15,10 +15,25 @@ function! s:get_input_key(input)
     return "input:" . a:input
 endfunction
 
+function! unite#filters#matcher_py_fuzzy#setcandidates(key, items) abort "{{{
+    let s:key = a:key
+    let s:items = a:items
+
+    execute 'python3 SetCandidates()'
+endfunction "}}}
+
+function! unite#filters#matcher_py_fuzzy#loadcandidates(key, path) abort "{{{
+    let s:key = a:key
+    let s:path = a:path
+
+    execute 'python3 LoadCandidates()'
+endfunction "}}}
+
 function! unite#filters#matcher_py_fuzzy#matcher(context, items, limit) abort "{{{
     let s:input = a:context.input
     let s:mmode = a:context.mmode
     let s:limit = a:limit
+    let s:key = a:context.cache_type
 
     let items = a:items
 
@@ -46,7 +61,7 @@ function! unite#filters#matcher_py_fuzzy#matcher(context, items, limit) abort "{
     let s:cache[cache_key_now] = s:rows
 
     return s:rez
-endfunction
+endfunction "}}}
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
