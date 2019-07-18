@@ -125,8 +125,10 @@ def LoadCandidates():
     loadCandidates(key, path)
 
 candidatesCache = {}
+resultCache = {}
 def ClearCache():
     candidatesCache = {}
+    resultCache = {}
 
 def getCacheKey(key, inputs):
     return key + "@" + inputs
@@ -135,22 +137,40 @@ def setCandidatesToCache(key, inputs, items):
     candidatesCache[getCacheKey(key, inputs)] = items
 
 def getCandidatesFromCache(key, inputs):
-    # print("get from cache, key:" + key + " inputs:" + inputs)
     return candidatesCache.get(getCacheKey(key, inputs), [])
+
+def setResultToCache(key, inputs, items):
+    resultCache[getCacheKey(key, inputs)] = items
 
 def getCandidates(key, inputs):
     items = []
-    if len(inputs) <= 1: #没有输入或输入为空 返回全部候选集
-        items = candidates.get(key, [])
-    else:
-        inputsCache = inputs[:-1]
-        items = getCandidatesFromCache(key, inputsCache)
+    if len(inputs) == 0: #没有输入 返回全部候选集
+        return candidates.get(key, [])
 
-    return items
+    # 判断是否已经有缓存
+    cacheKey = getCacheKey(key, inputs)
+    if cacheKey in candidatesCache:
+        return candidatesCache.get(cacheKey, [])
+
+    if len(inputs) == 0: # 只输入了1个字符 又没有缓存
+                         # 返回全部候选集
+        return candidates.get(key, [])
+
+    # 判断去掉最后一个字符的是否在缓存中
+    cacheKey = getCacheKey(key, inputs[:-1])
+    if cacheKey in candidatesCache:
+        return candidatesCache.get(cacheKey, [])
+
+    # 没有缓存，前面的输入也没有缓存，返回全部
+    return candidates.get(key, [])
 
 def uniteMatch(key, inputs, limit, mmode):
     isregex = True
     smartcase = True
+
+    cacheKey = getCacheKey(key, inputs)
+    if cacheKey in resultCache:
+        return resultCache.get(cacheKey, [])
 
     items = getCandidates(key, inputs)
 
@@ -172,7 +192,9 @@ def uniteMatch(key, inputs, limit, mmode):
         rowsWithScore = Match(opts, rows, islower)
         rowsFilter = GetFilterRows(rowsWithScore)
         setCandidatesToCache(key, inputs, rowsFilter)
+
         rows = Sort(rowsWithScore, limit)
+        setResultToCache(key, inputs, rows)
 
     if len(rows) > limit:
         rows = rows[:limit]
@@ -189,36 +211,10 @@ def UnitePyMatch():
     # isregex = False
     smartcase = True
 
-    items = getCandidates(key, inputs)
-
-    # rows = [line.lower() for line in items]
-    rows = items
-    rowsFilter = items
-
-    kwsAndDirs = inputs.split(';')
-    strKws = kwsAndDirs[0] if len(kwsAndDirs) > 0 else ""
-    strDir = kwsAndDirs[1] if len(kwsAndDirs) > 1 else ""
-
-    islower = is_search_lower(inputs)
-
-    opts = [(kw, get_regex_prog(kw, isregex, islower), mmode) for kw in strKws.split() if kw != ""]
-
-    if strDir != "":
-        opts.append((strDir, get_regex_prog(strDir, isregex, islower), 'dir'))
-
-    if len(opts) > 0:
-        rowsWithScore = Match(opts, rows, islower)
-        rowsFilter = GetFilterRows(rowsWithScore)
-        setCandidatesToCache(key, inputs, rowsFilter)
-        rows = Sort(rowsWithScore, limit)
-
-    if len(rows) > limit:
-        rows = rows[:limit]
+    rows = uniteMatch(key, inputs, limit, mmode)
 
     vimrez = ['"' + line.replace('\\', '\\\\').replace('"', '\\"') + '"' for line in rows]
-    vimrows = ['"' + line.replace('\\', '\\\\').replace('"', '\\"') + '"' for line in rowsFilter]
     vim.command('let s:rez = [%s]' % ','.join(vimrez))
-    vim.command('let s:rows = [%s]' % ','.join(vimrows))
 
 def main():
     items = ["aaa", "bbb", "ccc", "abc", "aba", "abababa", "acbacb"]
@@ -231,5 +227,5 @@ def main():
     res = uniteMatch(key, "abc", 10, "filename-only")
     print(res)
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+    # main()
