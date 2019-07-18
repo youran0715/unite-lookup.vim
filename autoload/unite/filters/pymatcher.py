@@ -1,4 +1,4 @@
-# import vim
+import vim
 import re
 import heapq
 import platform;
@@ -162,26 +162,26 @@ def existCache(key, inputs):
     return True
 
 def getCandidates(key, inputs):
-    if len(inputs) <= 1: #æ²¡æœ‰è¾“å…¥ è¿”å›žå…¨éƒ¨å€™é€‰é›†
+    if len(inputs) <= 1: #Ã»ÓÐÊäÈë ·µ»ØÈ«²¿ºòÑ¡¼¯
         return candidates.get(key, [])
 
-    # åˆ¤æ–­æ˜¯å¦å·²ç»æœ‰ç¼“å­˜
+    # ÅÐ¶ÏÊÇ·ñÒÑ¾­ÓÐ»º´æ
     cacheInputs = inputs[:-1]
     if existCache(key, cacheInputs):
         return getCandidatesFromCache(key, cacheInputs)
 
-    # æ²¡æœ‰ç¼“å­˜ï¼Œå‰é¢çš„è¾“å…¥ä¹Ÿæ²¡æœ‰ç¼“å­˜ï¼Œè¿”å›žå…¨éƒ¨
+    # Ã»ÓÐ»º´æ£¬Ç°ÃæµÄÊäÈëÒ²Ã»ÓÐ»º´æ£¬·µ»ØÈ«²¿
     return candidates.get(key, [])
 
 def uniteMatch(key, inputs, limit, mmode):
     isregex = True
     smartcase = True
 
-    # å…ˆçœ‹çœ‹ç¼“å­˜ä¸­æ˜¯å¦æœ‰
+    # ÏÈ¿´¿´»º´æÖÐÊÇ·ñÓÐ
     if existCache(key, inputs):
         return getResultFromCache(key, inputs)
 
-    # æ²¡æœ‰ï¼Œæˆ–åŽ»å€™é€‰é›†è¿›è¡Œè¿‡æ»¤
+    # Ã»ÓÐ£¬»òÈ¥ºòÑ¡¼¯½øÐÐ¹ýÂË
     items = getCandidates(key, inputs)
 
     rows = items

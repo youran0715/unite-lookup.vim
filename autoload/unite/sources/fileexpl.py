@@ -14,7 +14,11 @@ lfEval = vim.eval
 def saveFileList(file_path, file_list):
     with open(file_path, 'w') as f:
         for item in file_list:
-            f.write("%s\n" % os.path.relpath(item))
+            try:
+                f.write("%s\n" % os.path.relpath(item))
+            except UnicodeEncodeError:
+                continue
+	    
         f.close()
 
 def updateFileList(dir_path, file_path, wildignore, linksflag):
@@ -41,4 +45,10 @@ def UnitePyGetFileList():
     linksflag = lfEval("g:lookupfile_FollowLinks")
 
     updateFileList(dir_path, file_path, wildignore, linksflag)
+	
+def main():
+	wildignore={"file":[], "dir":[]}
+	updateFileList("C:\\Users\\WuHong\\vimfiles", "filelist", wildignore, "0")
+
+#main()
 
