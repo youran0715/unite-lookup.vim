@@ -5,7 +5,6 @@ import platform;
 
 _escape = dict((c , "\\" + c) for c in ['^','$','.','{','}','(',')','[',']','\\','/','+'])
 
-
 def filename_score(reprog, path, slash):
     # get filename via reverse find to improve performance
     slashPos = path.rfind(slash)
@@ -107,6 +106,7 @@ def vimecho(msg):
 candidates = {}
 def setCandidates(key, items):
     candidates[key] = items
+    clearCache(key)
 
 def loadCandidates(key, path):
     items = []
@@ -126,40 +126,46 @@ def LoadCandidates():
 
 candidatesCache = {}
 resultCache = {}
-def ClearCache():
-    candidatesCache = {}
-    resultCache = {}
+def clearCache(key):
+    candidatesCache[key] = {}
+    resultCache[key] = {}
 
 def getCacheKey(key, inputs):
     return key + "@" + inputs
 
 def setCandidatesToCache(key, inputs, items):
-    candidatesCache[getCacheKey(key, inputs)] = items
+    cache = candidatesCache.get(key, {})
+    cache[inputs] = items
 
 def getCandidatesFromCache(key, inputs):
-    return candidatesCache.get(getCacheKey(key, inputs), [])
+    cache = candidatesCache.get(key, {})
+    return cache.get(inputs, [])
 
 def setResultToCache(key, inputs, items):
-    resultCache[getCacheKey(key, inputs)] = items
+    cache = resultCache.get(key, {})
+    cache[inputs] = items
+
+def getResultFromCache(key, inputs):
+    cache = resultCache.get(key, {})
+    return cache.get(inputs, [])
+
+def existCache(key, inputs):
+    if key not in resultCache:
+        return False
+
+    if inputs not in resultCache[key]:
+        return False
+
+    return True
 
 def getCandidates(key, inputs):
-    items = []
-    if len(inputs) == 0: #没有输入 返回全部候选集
+    if len(inputs) <= 1: #没有输入 返回全部候选集
         return candidates.get(key, [])
 
     # 判断是否已经有缓存
-    cacheKey = getCacheKey(key, inputs)
-    if cacheKey in candidatesCache:
-        return candidatesCache.get(cacheKey, [])
-
-    if len(inputs) == 0: # 只输入了1个字符 又没有缓存
-                         # 返回全部候选集
-        return candidates.get(key, [])
-
-    # 判断去掉最后一个字符的是否在缓存中
-    cacheKey = getCacheKey(key, inputs[:-1])
-    if cacheKey in candidatesCache:
-        return candidatesCache.get(cacheKey, [])
+    cacheInputs = inputs[:-1]
+    if existCache(key, cacheInputs):
+        return getCandidatesFromCache(key, cacheInputs)
 
     # 没有缓存，前面的输入也没有缓存，返回全部
     return candidates.get(key, [])
@@ -168,10 +174,11 @@ def uniteMatch(key, inputs, limit, mmode):
     isregex = True
     smartcase = True
 
-    cacheKey = getCacheKey(key, inputs)
-    if cacheKey in resultCache:
-        return resultCache.get(cacheKey, [])
+    # 先看看缓存中是否有
+    if existCache(key, inputs):
+        return getResultFromCache(key, inputs)
 
+    # 没有，或去候选集进行过滤
     items = getCandidates(key, inputs)
 
     rows = items
@@ -191,15 +198,19 @@ def uniteMatch(key, inputs, limit, mmode):
     if len(opts) > 0:
         rowsWithScore = Match(opts, rows, islower)
         rowsFilter = GetFilterRows(rowsWithScore)
-        setCandidatesToCache(key, inputs, rowsFilter)
-
         rows = Sort(rowsWithScore, limit)
+
+        setCandidatesToCache(key, inputs, rowsFilter)
         setResultToCache(key, inputs, rows)
 
     if len(rows) > limit:
         rows = rows[:limit]
 
     return rows
+
+def ClearCache():
+    key = vim.eval('s:key')
+    clearCache(key)
 
 def UnitePyMatch():
     # items = vim.eval('s:items')

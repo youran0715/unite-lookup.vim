@@ -23,6 +23,10 @@ if !exists("g:lookupfile_IndexTimeLimit")
     let g:lookupfile_IndexTimeLimit=120
 endif
 
+let s:cache_key_curr = "lookup_curr_buf"
+let s:cache_key_mru = "lookup_mru"
+let s:cache_key_file = "lookup_file"
+
 function! unite#sources#lookup_file#buf_enter()
     call s:add_mru(fnamemodify(bufname("%"), ":p"))
 endfunction
@@ -201,6 +205,9 @@ function! s:source_filemru.hooks.on_init(args, context)
     let a:context.exclude_mru  = 1
     let a:context.current_buffer = fnamemodify(bufname('%'), ":p")
     call s:update_mru_map()
+    if a:context.is_redraw
+        call unite#filters#matcher_py_fuzzy#clearcache(s:cache_key)
+    endif
 endfunction
 
 function! s:source_filemru.hooks.on_close(args, context)
@@ -222,14 +229,15 @@ function! s:source_mru.hooks.on_init(args, context)
 endfunction
 
 function! s:gather_candidates_current_buf(args, context)
-    let a:context.cache_type = "lookup_curr_buf"
+    let a:context.cache_type = s:cache_key_curr
 
     let buf = a:context.current_buffer
 
     if !buflisted(buf) | return [] | endif
 
     let files = [fnamemodify(buf, ":p:.")]
-    return s:map_result(s:get_result(a:context, files), '[E]')
+    call unite#filters#matcher_py_fuzzy#setcandidates(s:cache_key_curr, files)
+    return s:map_result(s:get_result(a:context), '[E]')
 endfunction
 
 function! s:source_filemru.gather_candidates(args, context)
@@ -245,20 +253,16 @@ function! s:source_filemru.gather_candidates(args, context)
     return result
 endfunction
 
-let s:cached_result = []
 function! s:gather_candidates_file(args, context)
-    let a:context.cache_type = "lookup_file"
+    return []
+    let a:context.cache_type = s:cache_key_file
 
     if a:context.is_redraw || !filereadable(s:get_cache_path_filelist())
         call s:refresh_filelist()
-        let s:cached_result = []
+        call unite#filters#matcher_py_fuzzy#loadcandidates(s:cache_key_file, s:get_cache_path_filelist())
     endif
 
-    if empty(s:cached_result)
-        let s:cached_result = readfile(s:get_cache_path_filelist())
-    endif
-
-    let match_result = s:get_result(a:context, s:cached_result)
+    let match_result = s:get_result(a:context)
 
     let result = []
 
@@ -280,12 +284,14 @@ function! s:gather_candidates_file(args, context)
 endfunction
 
 function! s:gather_candidates_mru(args, context)
-    let a:context.cache_type = "lookup_mru"
-    return s:map_result(s:get_result(a:context, s:get_mrulist(a:context.current_buffer)), '[M]')
+    let a:context.cache_type = s:cache_key_mru
+    let mrus = s:get_mrulist(a:context.current_buffer)
+    call unite#filters#matcher_py_fuzzy#setcandidates(s:cache_key_mru, mrus)
+    return s:map_result(s:get_result(a:context), '[M]')
 endfunction
 
-fun s:get_result(context, items)
-    return unite#filters#matcher_py_fuzzy#matcher(a:context, a:items, g:lookup_file_max_candidates)
+fun s:get_result(context)
+    return unite#filters#matcher_py_fuzzy#matcher(a:context, g:lookup_file_max_candidates)
 endf
 
 fun s:map_result(rows, abbr)

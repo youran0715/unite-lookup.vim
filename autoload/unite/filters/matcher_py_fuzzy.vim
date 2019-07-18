@@ -10,6 +10,7 @@ else
 endif
 
 function! unite#filters#matcher_py_fuzzy#clearcache(key) abort "{{{
+    let s:key = a:key
     execute 'python3 ClearCache()'
 endfunction "}}}
 
