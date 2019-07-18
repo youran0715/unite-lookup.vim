@@ -110,6 +110,9 @@ def setCandidates(key, items):
 
 def loadCandidates(key, path):
     items = []
+    with open(path,'r') as f:
+        items = f.read().splitlines()
+
     setCandidates(key, items)
 
 def SetCandidates():
@@ -228,14 +231,15 @@ def UnitePyMatch():
     vim.command('let s:rez = [%s]' % ','.join(vimrez))
 
 def main():
-    items = ["aaa", "bbb", "ccc", "abc", "aba", "abababa", "acbacb"]
+    # items = ["aaa", "bbb", "ccc", "abc", "aba", "abababa", "acbacb"]
     key = "test"
-    setCandidates(key, items)
+    loadCandidates(key, "/home/wuhong/.cache/vim/_home_wuhong_.vim_bundle_unite-lookup.vim/filelist2")
+    # setCandidates(key, items)
     res = uniteMatch(key, "a", 10, "filename-only")
     print(res)
-    res = uniteMatch(key, "ab", 10, "filename-only")
+    res = uniteMatch(key, "at", 10, "filename-only")
     print(res)
-    res = uniteMatch(key, "abc", 10, "filename-only")
+    res = uniteMatch(key, "atc", 10, "filename-only")
     print(res)
 
 # if __name__ == "__main__":

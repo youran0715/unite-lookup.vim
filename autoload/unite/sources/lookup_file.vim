@@ -253,13 +253,18 @@ function! s:source_filemru.gather_candidates(args, context)
     return result
 endfunction
 
+let s:is_load_file = 0
 function! s:gather_candidates_file(args, context)
-    return []
     let a:context.cache_type = s:cache_key_file
 
     if a:context.is_redraw || !filereadable(s:get_cache_path_filelist())
         call s:refresh_filelist()
+        let s:is_load_file = 0
+    endif
+
+    if s:is_load_file == 0
         call unite#filters#matcher_py_fuzzy#loadcandidates(s:cache_key_file, s:get_cache_path_filelist())
+        let s:is_load_file = 1
     endif
 
     let match_result = s:get_result(a:context)
@@ -268,7 +273,6 @@ function! s:gather_candidates_file(args, context)
 
     let tag_idx = 0
     while tag_idx < len(match_result)
-        " let file = fnamemodify(match_result[tag_idx], ":p")
         let file = match_result[tag_idx]
         if (a:context.exclude_mru && s:mrulisted(file))
             let tag_idx = tag_idx + 1
