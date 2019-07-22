@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import vim
 import re
 import heapq
@@ -162,26 +165,22 @@ def existCache(key, inputs):
     return True
 
 def getCandidates(key, inputs):
-    if len(inputs) <= 1: #没有输入 返回全部候选集
+    if len(inputs) <= 1:
         return candidates.get(key, [])
 
-    # 判断是否已经有缓存
     cacheInputs = inputs[:-1]
     if existCache(key, cacheInputs):
         return getCandidatesFromCache(key, cacheInputs)
 
-    # 没有缓存，前面的输入也没有缓存，返回全部
     return candidates.get(key, [])
 
 def uniteMatch(key, inputs, limit, mmode):
     isregex = True
     smartcase = True
 
-    # 先看看缓存中是否有
     if existCache(key, inputs):
         return getResultFromCache(key, inputs)
 
-    # 没有，或去候选集进行过滤
     items = getCandidates(key, inputs)
 
     rows = items
