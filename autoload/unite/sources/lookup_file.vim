@@ -284,7 +284,7 @@ function! s:gather_candidates_file(args, context)
         let tag_idx = tag_idx + 1
     endwhile
 
-    return s:map_result(result, '')
+    return s:map_result(result, '   ')
 endfunction
 
 function! s:gather_candidates_mru(args, context)
