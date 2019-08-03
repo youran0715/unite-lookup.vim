@@ -23,33 +23,30 @@ if !exists("g:lookupfile_IndexTimeLimit")
     let g:lookupfile_IndexTimeLimit=120
 endif
 
-let s:cache_key_curr = "lookup_curr_buf"
-let s:cache_key_mru = "lookup_mru"
-let s:cache_key_file = "lookup_file"
-
 function! unite#sources#lookup_file#buf_enter()
-    call s:add_mru(fnamemodify(bufname("%"), ":p"))
+    let s:buf_path = bufname("%")
+    if !filereadable(s:buf_path)
+        return
+    endif
+
+    execute 'python' . (has('python3') ? '3' : '') . ' UnitePyAddMru()'
 endfunction
 
 " define source
 function! unite#sources#lookup_file#define()
-    return [s:source_file, s:source_mru, s:source_filemru]
+    return [s:source_filemru]
 endfunction
 
 function! s:get_cache_dir()
 	set shellslash
-    let cache_dir = expand($HOME) . "/.cache/vim/"
-
-    if !isdirectory(cache_dir)
-        call mkdir(cache_dir)
-    endif
+    let cache_dir = expand($HOME) . "/.cache/vim/lookupfile/"
 
 	let cwd = substitute(getcwd(), '/', '_', 'g')
 	let cwd = substitute(cwd, ':', '_', 'g')
 	let dir = cache_dir . cwd . '/'
 
     if !isdirectory(dir)
-        call mkdir(dir)
+        call mkdir(dir, "p")
     endif
 
 	if g:is_os_windows
@@ -59,81 +56,8 @@ function! s:get_cache_dir()
     return dir
 endfunction
 
-function! s:get_mrulist(current_buffer)
-    let filepath = s:get_cache_path_mrulist()
-
-    if !filereadable(filepath)
-        return []
-    endif
-
-    let mrulist = []
-    for line in readfile(filepath)
-        if filereadable(line) && a:current_buffer != line
-            call add(mrulist, fnamemodify(line, ":."))
-        endif
-    endfor
-
-    return mrulist
-endfun
-
-let s:mru_map = {}
-function! s:update_mru_map()
-    let filepath = s:get_cache_path_mrulist()
-    if !filereadable(filepath)
-        return
-    endif
-
-    let s:mru_map = {}
-    for line in readfile(filepath)
-        let rpath = fnamemodify(line, ":p:.")
-        let s:mru_map[rpath] = 1
-    endfor
-endfun
-
-function! s:clean_mru_map()
-    let s:mru_map = {}
-endfunction
-
-function! s:mrulisted(file)
-    return has_key(s:mru_map, a:file)
-endfunction
-
-function! s:add_mru(path)
-    let mrus = []
-    if !filereadable(a:path)
-        return
-    endif
-
-    let path = fnamemodify(a:path, ":p:.")
-    if path[0] == '.' || path[0] == '/'
-        return
-    endif
-
-    call add(mrus, a:path)
-
-    let mrupath = s:get_cache_path_mrulist()
-    if filereadable(mrupath)
-        for line in readfile(mrupath)
-            if line != a:path
-                call add(mrus, line)
-            endif
-        endfor
-    endif
-
-    if len(mrus) > g:lookup_file_mru_max
-        let mrus = mrus[:g:lookup_file_mru_max - 1]
-    endif
-
-    call writefile(mrus, mrupath)
-endfunction
-
-function! unite#sources#lookup_file#clean_mru()
-    let filepath = s:get_cache_path_mrulist()
-    call delete(filepath)
-endfunction
-
 function! s:get_cache_path_filelist()
-    return s:get_cache_dir() . 'filelist2'
+    return s:get_cache_dir() . 'filelist3'
 endfunction
 
 function! s:get_cache_path_mrulist()
@@ -141,17 +65,11 @@ function! s:get_cache_path_mrulist()
 endfunction
 
 let s:plugin_path = escape(expand('<sfile>:p:h'), '\')
-
-if has('python3')
-  execute 'py3file ' . s:plugin_path . '/fileexpl.py'
-else
-  execute 'pyfile ' . s:plugin_path . '/fileexpl.py'
-endif
+execute 'py3file ' . s:plugin_path . '/fileexpl.py'
 
 function! s:refresh_filelist()
     let s:file_list=[]
     let s:file_path = s:get_cache_path_filelist()
-    call writefile(s:file_list, s:file_path)
 
     let s:dir_path= escape(fnamemodify("./", ":p"), ' \')
 
@@ -159,152 +77,46 @@ function! s:refresh_filelist()
     execute 'python' . (has('python3') ? '3' : '') . ' UnitePyGetFileList()'
 endfunction
 
-" source file
-let s:source_file = {
-    \   'name': 'look/f',
-    \   'description': 'candidates from lookup file',
-    \   'max_candidates': g:lookup_file_max_candidates,
-    \   'hooks': {},
-    \   'default_kind' : 'file',
-    \   'default_action' : {'*' : 'open'},
-    \   'syntax': 'uniteSource__LookupFile',
-    \   'is_volatile': 1,
-\}
-
-" source mru
-let s:source_mru = {
-    \   'name': 'look/mru',
-    \   'description': 'candidates from lookup mru',
-    \   'max_candidates': 30,
-    \   'hooks': {},
-    \   'default_kind' : 'file',
-    \   'default_action' : {'*' : 'open'},
-    \   'syntax': 'uniteSource__LookupMru',
-    \   'is_volatile': 1,
-\}
-
 " source file & mru
 let s:source_filemru = {
     \   'name': 'look/fm',
     \   'description': 'candidates from lookup file and mru',
     \   'max_candidates': 50,
     \   'hooks': {},
+    \   'kind': 'file',
     \   'syntax': 'uniteSource__LookupFile',
     \   'is_volatile': 1,
 \}
 
-function! s:source_file.hooks.on_init(args, context)
-    let a:context.exclude_mru  = 0
-    let a:context.current_buffer = fnamemodify(bufname('%'), ":p")
-endfunction
-
-function! s:source_file.hooks.on_close(args, context)
-endfunction
-
 function! s:source_filemru.hooks.on_init(args, context)
     let a:context.exclude_mru  = 1
     let a:context.current_buffer = fnamemodify(bufname('%'), ":p")
-    call s:update_mru_map()
     if a:context.is_redraw
-        call unite#filters#matcher_py_fuzzy#clearcache(s:cache_key)
+        " call unite#filters#matcher_py_fuzzy#clearcache(s:cache_key)
     endif
 endfunction
 
-function! s:source_filemru.hooks.on_close(args, context)
-    call s:clean_mru_map()
-endfunction
-
-function! s:source_file.gather_candidates(args, context)
-    let a:context.mmode = "filename-only"
-    return s:gather_candidates_file(a:args, a:context)
-endfunction
-
-function! s:source_mru.gather_candidates(args, context)
-    let a:context.mmode = "filename-only"
-    return s:gather_candidates_mru(a:args, a:context)
-endfunction
-
-function! s:source_mru.hooks.on_init(args, context)
-    let a:context.current_buffer = bufname('%')
-endfunction
-
-function! s:gather_candidates_current_buf(args, context)
-    let a:context.cache_type = s:cache_key_curr
-
-    let buf = a:context.current_buffer
-
-    if !buflisted(buf) | return [] | endif
-
-    let files = [fnamemodify(buf, ":p:.")]
-    call unite#filters#matcher_py_fuzzy#setcandidates(s:cache_key_curr, files)
-    return s:map_result(s:get_result(a:context), '[E]')
-endfunction
-
-function! s:source_filemru.gather_candidates(args, context)
-    let a:context.mmode = "filename-only"
-
-    let candidates_mru  = s:gather_candidates_mru(a:args, a:context)
-    let candidates_curr = s:gather_candidates_current_buf(a:args, a:context)
-    let candidates_file = s:gather_candidates_file(a:args, a:context)
-
-    let result = extend(candidates_mru, candidates_curr)
-    let result = extend(result, candidates_file)
-
-    return result
+function! s:load_filelist()
+    let s:file_path = s:get_cache_path_filelist()
+    execute 'python' . (has('python3') ? '3' : '') . ' UnitePyLoad()'
 endfunction
 
 let s:is_load_file = 0
-function! s:gather_candidates_file(args, context)
-    let a:context.cache_type = s:cache_key_file
-
+function! s:source_filemru.gather_candidates(args, context)
     if a:context.is_redraw || !filereadable(s:get_cache_path_filelist())
         call s:refresh_filelist()
         let s:is_load_file = 0
     endif
 
     if s:is_load_file == 0
-        call unite#filters#matcher_py_fuzzy#loadcandidates(s:cache_key_file, s:get_cache_path_filelist())
+        call s:load_filelist()
         let s:is_load_file = 1
     endif
 
-    let match_result = s:get_result(a:context)
+    let s:inputs = a:context['input']
+    let s:rez = []
+    execute 'python' . (has('python3') ? '3' : '') . ' UnitePyGetResult()'
 
-    let result = []
-
-    let tag_idx = 0
-    while tag_idx < len(match_result)
-        let file = match_result[tag_idx]
-        if (a:context.exclude_mru && s:mrulisted(file))
-            let tag_idx = tag_idx + 1
-            continue
-        endif
-
-        call add(result, file)
-
-        let tag_idx = tag_idx + 1
-    endwhile
-
-    return s:map_result(result, '')
+    return s:rez
 endfunction
-
-function! s:gather_candidates_mru(args, context)
-    let a:context.cache_type = s:cache_key_mru
-    let mrus = s:get_mrulist(a:context.current_buffer)
-    call unite#filters#matcher_py_fuzzy#setcandidates(s:cache_key_mru, mrus)
-    return s:map_result(s:get_result(a:context), '[M]')
-endfunction
-
-fun s:get_result(context)
-    return unite#filters#matcher_py_fuzzy#matcher(a:context, g:lookup_file_max_candidates)
-endf
-
-fun s:map_result(rows, abbr)
-    return map(a:rows, "{
-      \ 'word': fnamemodify(v:val, ':t'),
-      \ 'abbr': printf('%s %s', a:abbr, fnamemodify(v:val, ':.')),
-      \ 'kind'  : 'file',
-      \ 'group' : 'file',
-      \ 'action__path': v:val,
-      \ }")
-endf
 
