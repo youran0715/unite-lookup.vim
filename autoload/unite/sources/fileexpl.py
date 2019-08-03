@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# import vim
+import vim
 import re
 import os
 import sys
@@ -13,7 +13,6 @@ import platform;
 
 files = []
 mrus = []
-mrusMap = {}
 def load_filelist(file_path):
     with open(file_path,'r') as f:
         lines = f.read().splitlines()
@@ -23,6 +22,7 @@ def load_filelist(file_path):
             items = line.split("\t")
             fileItem = (items[0], items[1])
             files.append(fileItem)
+        f.close()
 
 def save_filelist(file_path, file_list):
     with open(file_path, 'w') as f:
@@ -132,7 +132,7 @@ def do_search_dir(rows, progs, limit, islower):
 
     return [line for score, line in heapq.nlargest(limit, res)]
 
-def search(rows, exclude, inputs, limit):
+def search(rows, inputs, limit):
     islower = is_search_lower(inputs)
 
     kwsAndDirs = inputs.split(';')
@@ -154,9 +154,6 @@ def search(rows, exclude, inputs, limit):
     if len(rez) > limit:
         return rez[:limit]
 
-    if len(exclude) > 0:
-        rez = [ row for row in rez if row not in exclude ]
-
     return rez
 
 def add_mru(path):
@@ -165,19 +162,49 @@ def add_mru(path):
 
     global mrus
     item = (file_name, dir_name)
+    # print("item:%s" % str(item))
     try:
         mrus.remove(item)
     except Exception as e:
         pass
-    mrus.insert(0, (file_name, dir_name))
+    # print("before")
+    # print(mrus)
+    mrus.insert(0, item)
     mrus = mrus if len(mrus) < 30 else mrus[0:30]
+    # print("after")
+    # print(mrus)
 
 def get_path(row):
     return ('%s%s%s' % (row[1], '/' if row[1] != "" else '', row[0]))
 
-
 def UnitePyAddMru():
-    add_mru(vim.eval('s:buf_path'))
+    path = vim.eval('s:buf_path')
+    if os.path.abspath(path).startswith(os.getcwd()):
+        add_mru(path)
+
+def UnitePySaveMrus():
+    file_path = vim.eval('s:file_path')
+    with open(file_path, 'w') as f:
+        global mrus
+        for mru in mrus:
+            # vim.command('echo "' + str(mru) + '"')
+            try:
+                f.write("%s\n" % (get_path(mru)))
+            except UnicodeEncodeError:
+                continue
+
+        f.close()
+
+def UnitePyLoadMrus():
+    file_path = vim.eval('s:file_path')
+    with open(file_path,'r') as f:
+        lines = f.read().splitlines()
+        global mrus
+        mrus = []
+        for line in lines:
+            item = (os.path.basename(line), os.path.dirname(line))
+            mrus.append(item)
+        f.close()
 
 def UnitePyLoad():
     file_path = vim.eval('s:file_path')
@@ -186,8 +213,12 @@ def UnitePyLoad():
 def UnitePyGetResult():
     inputs = vim.eval('s:inputs')
 
-    rows_file = search(files, mrus, inputs, 20)
-    rows_mru = search(mrus, [],  inputs, 20)
+    global files
+    global mrus
+    rows_file = search(files, inputs, 20)
+    rows_mru = search(mrus,  inputs, 20)
+
+    # print(mrus)
 
     lines = [{
         'word': row[0],
@@ -203,7 +234,7 @@ def UnitePyGetResult():
         'kind': 'file',
         'group': 'file',
         'action__path': get_path(row),
-        } for row in rows_file])
+        } for row in rows_file if row not in rows_mru ])
 
     vimrez = [str(line).replace('\\', '\\\\').replace('"', '\\"') for line in lines]
     vim.command('let s:rez = [%s]' % ','.join(vimrez))

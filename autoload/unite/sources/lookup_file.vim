@@ -23,13 +23,29 @@ if !exists("g:lookupfile_IndexTimeLimit")
     let g:lookupfile_IndexTimeLimit=120
 endif
 
+let s:is_inited = 0
+function! unite#sources#lookup_file#vim_enter()
+    if !s:is_inited
+        let s:file_path = s:get_cache_path_mrulist()
+        if filereadable(s:file_path)
+            execute 'python3 UnitePyLoadMrus()'
+        endif
+        let s:is_inited = 1
+    endif
+endfunction
+
+function! unite#sources#lookup_file#vim_leave()
+    let s:file_path = s:get_cache_path_mrulist()
+    execute 'python3 UnitePySaveMrus()'
+endfunction
+
 function! unite#sources#lookup_file#buf_enter()
     let s:buf_path = bufname("%")
     if !filereadable(s:buf_path)
         return
     endif
 
-    execute 'python' . (has('python3') ? '3' : '') . ' UnitePyAddMru()'
+    execute 'python3 UnitePyAddMru()'
 endfunction
 
 " define source
@@ -57,11 +73,11 @@ function! s:get_cache_dir()
 endfunction
 
 function! s:get_cache_path_filelist()
-    return s:get_cache_dir() . 'filelist3'
+    return s:get_cache_dir() . 'filelist5'
 endfunction
 
 function! s:get_cache_path_mrulist()
-    return s:get_cache_dir() . 'mrulist2'
+    return s:get_cache_dir() . 'mrulist5'
 endfunction
 
 let s:plugin_path = escape(expand('<sfile>:p:h'), '\')
@@ -74,7 +90,7 @@ function! s:refresh_filelist()
     let s:dir_path= escape(fnamemodify("./", ":p"), ' \')
 
     let s:dir_path= fnamemodify("./", ":p")
-    execute 'python' . (has('python3') ? '3' : '') . ' UnitePyGetFileList()'
+    execute 'python3 UnitePyGetFileList()'
 endfunction
 
 " source file & mru
@@ -98,7 +114,7 @@ endfunction
 
 function! s:load_filelist()
     let s:file_path = s:get_cache_path_filelist()
-    execute 'python' . (has('python3') ? '3' : '') . ' UnitePyLoad()'
+    execute 'python3 UnitePyLoad()'
 endfunction
 
 let s:is_load_file = 0
@@ -115,7 +131,7 @@ function! s:source_filemru.gather_candidates(args, context)
 
     let s:inputs = a:context['input']
     let s:rez = []
-    execute 'python' . (has('python3') ? '3' : '') . ' UnitePyGetResult()'
+    execute 'python3 UnitePyGetResult()'
 
     return s:rez
 endfunction
