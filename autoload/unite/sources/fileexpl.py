@@ -4,20 +4,20 @@
 import vim
 import re
 import os
-import sys
 import time
-import os.path
 import fnmatch
 import heapq
-import platform;
 
 files = []
 mrus = []
+caches = {}
 def load_filelist(file_path):
     with open(file_path,'r') as f:
         lines = f.read().splitlines()
         global files
+        global caches
         files = []
+        caches = {}
         for line in lines:
             items = line.split("\t")
             fileItem = (items[0], items[1])
@@ -28,6 +28,7 @@ def save_filelist(file_path, file_list):
     with open(file_path, 'w') as f:
         global files
         files = []
+        caches = {}
         for item in file_list:
             try:
                 fileItem = (os.path.basename(item) , os.path.dirname(os.path.relpath(item)))
@@ -211,6 +212,7 @@ def UnitePyLoad():
     load_filelist(file_path)
 
 def UnitePyGetResult():
+    start_time = time.time()
     inputs = vim.eval('s:inputs')
 
     global files
@@ -238,6 +240,9 @@ def UnitePyGetResult():
 
     vimrez = [str(line).replace('\\', '\\\\').replace('"', '\\"') for line in lines]
     vim.command('let s:rez = [%s]' % ','.join(vimrez))
+
+    end_time = time.time()
+    vim.command('echo "search %s cost %.1f ms"' % (inputs, (end_time - start_time)*1000))
 
 def UnitePyGetFileList():
     dir_path = vim.eval('s:dir_path')
