@@ -65,7 +65,7 @@ def filename_score(reprog, filename, dirname):
     return 0
 
 def dir_score(reprog, line):
-    result = reprog.search(os.path.dirname(line))
+    result = reprog.search(line)
     if result:
         score = result.end() - result.start() + 1
         score = score + ( len(line) + 1 ) / 100.0
