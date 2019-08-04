@@ -11,6 +11,7 @@ import heapq
 files = []
 mrus = []
 caches = {}
+
 def load_filelist(file_path):
     with open(file_path,'r') as f:
         lines = f.read().splitlines()
@@ -95,14 +96,19 @@ def contain_upper(kw):
 def is_search_lower(kw):
     return False if contain_upper(kw) else True
 
-def do_search_file(rows, progs, limit, islower):
+def do_search(rows, progs, islower):
     res = []
 
     for row in rows:
-        line = row[0].lower() if islower else row[0]
+        filename = row[0].lower() if islower else row[0]
+        dir = row[1].lower() if islower else row[1]
         scoreTotal = 0.0
-        for prog in progs:
-            score = filename_score(prog, line, row[1])
+        for (prog, tp) in progs:
+            score = 0
+            if tp == "name":
+                score = filename_score(prog, filename, dir)
+            else:
+                score = dir_score(prog, dir)
             if score == 0:
                 scoreTotal = 0
                 break
@@ -112,50 +118,37 @@ def do_search_file(rows, progs, limit, islower):
         if scoreTotal != 0:
             res.append((scoreTotal, row))
 
-    return [line for score, line in heapq.nlargest(limit, res)]
+    return res
 
-def do_search_dir(rows, progs, limit, islower):
-    res = []
+def search(rows, inputs, limit, is_cache):
+    if inputs == "" or inputs == ";":
+        return rows if len(rows) <= limit else rows[:limit]
 
-    for row in rows:
-        line = row[1].lower() if islower else row[1]
-        scoreTotal = 0.0
-        for prog in progs:
-            score = dir_score(prog, line)
-            if score == 0:
-                scoreTotal = 0
-                break
-            else:
-                scoreTotal += score
-
-        if scoreTotal != 0:
-            res.append((scoreTotal, row))
-
-    return [line for score, line in heapq.nlargest(limit, res)]
-
-def search(rows, inputs, limit):
-    islower = is_search_lower(inputs)
-
-    kwsAndDirs = inputs.split(';')
-    inputs_file = (kwsAndDirs[0] if len(kwsAndDirs) > 0 else "").strip()
-    inputs_dir  = (kwsAndDirs[1] if len(kwsAndDirs) > 1 else "").strip()
-
-    fprogs = [get_regex_prog(kw, islower) for kw in inputs_file.split() if kw != ""]
-    dprogs = [get_regex_prog(kw, islower) for kw in inputs_dir.split() if kw != ""]
-
-    rez = []
-    if len(fprogs) > 0:
-        rez = do_search_file(rows, fprogs, limit, islower)
+    rowsWithScore = []
+    if is_cache and inputs in caches:
+        rowsWithScore = caches[inputs]
     else:
-        rez = rows
+        if is_cache and len(inputs) > 1:
+            cacheInputs = inputs[:-1]
+            if cacheInputs in caches:
+                rowsWithScore = caches[cacheInputs]
+                rows = [line for score, line in rowsWithScore]
 
-    if len(dprogs) > 0:
-        rez = do_search_dir(rez, dprogs, limit, islower)
+        islower = is_search_lower(inputs)
 
-    if len(rez) > limit:
-        return rez[:limit]
+        kwsAndDirs = inputs.split(';')
+        inputs_file = (kwsAndDirs[0] if len(kwsAndDirs) > 0 else "").strip()
+        inputs_dir  = (kwsAndDirs[1] if len(kwsAndDirs) > 1 else "").strip()
 
-    return rez
+        progs = [(get_regex_prog(kw, islower), "name") for kw in inputs_file.split() if kw != ""]
+        progs.extend([(get_regex_prog(kw, islower), "dir") for kw in inputs_dir.split() if kw != ""])
+
+        rowsWithScore = do_search(rows, progs, islower)
+        # save in cache
+        if is_cache and len(progs) > 0:
+            caches[inputs] = rowsWithScore
+
+    return [line for score, line in heapq.nlargest(limit, rowsWithScore)]
 
 def add_mru(path):
     file_name = os.path.basename(path)
@@ -176,7 +169,7 @@ def add_mru(path):
     # print(mrus)
 
 def get_path(row):
-    return ('%s%s%s' % (row[1], '/' if row[1] != "" else '', row[0]))
+    return os.path.join(row[1], row[0])
 
 def UnitePyAddMru():
     path = vim.eval('s:buf_path')
@@ -213,12 +206,12 @@ def UnitePyLoad():
 
 def UnitePyGetResult():
     start_time = time.time()
-    inputs = vim.eval('s:inputs')
+    inputs = vim.eval('s:inputs').strip()
 
     global files
     global mrus
-    rows_file = search(files, inputs, 20)
-    rows_mru = search(mrus,  inputs, 20)
+    rows_file = search(files, inputs, 20, True)
+    rows_mru = search(mrus,  inputs, 20, False)
 
     # print(mrus)
 
