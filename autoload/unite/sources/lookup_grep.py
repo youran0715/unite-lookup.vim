@@ -15,9 +15,12 @@ def gather_candidates():
     # rows = do_gather_candidates("can", 10)
 
     # print(rows)
-    vimrez = [str(row).replace('\\', '\\\\') for row in rows]
+    # vimrez = [str(row).replace('\\', '\\\\').replace('"', '\\"') for row in rows]
+    # vimrez = [str(row).replace('\\', '\\\\').replace('"', '\\"') for row in rows]
 
-    vim.command('let s:rez = [%s]' % ','.join(vimrez))
+    print(rows)
+
+    vim.command('let s:rez = {0}'.format(rows))
 
 cache = {}
 
@@ -81,6 +84,7 @@ def get_regex_prog(kw, islower):
 
 def __candidate(line, progs):
     try:
+        line = line.replace('"', '')
         items = line.split(':')
         if len(items) < 4:
             return None
@@ -88,7 +92,7 @@ def __candidate(line, progs):
         path = items[0].strip()
         row = items[1]
         col = items[2]
-        body = ''.join(items[3::]).replace('\r', '').replace('\\', '').strip()
+        body = ''.join(items[3::]).replace('\r', '').strip()
 
         bodylower = body.lower()
         for prog in progs:
@@ -97,17 +101,17 @@ def __candidate(line, progs):
                 return None
 
         return {
-                'word': body,
-                "abbr": '{0}:{1}: {2}'.format(
+                "word": body,
+                "abbr": "{0}:{1}: {2}".format(
                     path,
                     row,
                     body
                     ),
-                'kind': 'jump_list',
-                'action__path': path,
-                'action__line': int(row),
-                'action__col': int(col),
-                'action__text': body
+                "kind": "jump_list",
+                "action__path": path,
+                "action__line": int(row),
+                "action__col": int(col),
+                "action__text": body
                 }
     except TypeError as e:
         return None
