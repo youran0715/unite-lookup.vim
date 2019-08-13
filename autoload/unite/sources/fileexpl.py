@@ -176,6 +176,10 @@ def UnitePyAddMru():
     if os.path.abspath(path).startswith(os.getcwd()):
         add_mru(path)
 
+def UnitePyCleanMrus():
+    global mrus
+    mrus = []
+
 def UnitePySaveMrus():
     file_path = vim.eval('s:file_path')
     with open(file_path, 'w') as f:
