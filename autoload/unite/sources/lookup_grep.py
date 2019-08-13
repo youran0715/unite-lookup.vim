@@ -103,6 +103,7 @@ def __candidate(line, progs):
                     row,
                     body
                     ),
+                'kind': 'jump_list',
                 'action__path': path,
                 'action__line': int(row),
                 'action__col': int(col),
