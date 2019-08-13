@@ -81,7 +81,7 @@ function! s:get_cache_path_mrulist()
 endfunction
 
 let s:plugin_path = escape(expand('<sfile>:p:h'), '\')
-execute 'py3file ' . s:plugin_path . '/fileexpl.py'
+execute 'py3file ' . s:plugin_path . '/lookup_file.py'
 
 function! s:refresh_filelist()
     let s:file_list=[]
