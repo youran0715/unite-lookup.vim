@@ -39,6 +39,11 @@ function! unite#sources#lookup_file#vim_leave()
     execute 'python3 UnitePySaveMrus()'
 endfunction
 
+function! unite#sources#lookup_file#clean_mru()
+    let s:file_path = s:get_cache_path_mrulist()
+    execute 'python3 UnitePyCleanMrus()'
+endfunction
+
 function! unite#sources#lookup_file#buf_enter()
     let s:buf_path = bufname("%")
     if !filereadable(s:buf_path)
