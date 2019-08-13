@@ -15,7 +15,7 @@ def gather_candidates():
     # rows = do_gather_candidates("can", 10)
 
     # print(rows)
-    vimrez = [str(row).replace('\\', '\\\\') for row in rows]
+    vimrez = [str(row).replace('\\', '\\\\').replace("'", "\'") for row in rows]
 
     vim.command('let s:rez = [%s]' % ','.join(vimrez))
 
@@ -39,10 +39,7 @@ def do_gather_candidates(inputs, limit):
         output = cache[inputs[:-1]]
     else:
         args = get_args(kws[0])
-        if not isWindows:
-            output = run_command_linux(args, os.getcwd())
-        else:
-            output = run_command_windows(args, os.getcwd())
+        output = run_command_linux(args, os.getcwd())
 
     rows = []
     rowsMatch = []
@@ -117,7 +114,7 @@ def get_args_rg(inputs):
     return args
 
 def get_args_ag(inputs):
-    args = ['ag', '-S', '--vimgrep', inputs,]
+    args = ['ag', '-i', '--vimgrep', inputs]
     return args
 
 def get_args_ack(inputs):
@@ -130,16 +127,9 @@ def get_args_git(inputs):
 
 def get_args(inputs):
     if isWindows:
-        return get_args_rg(inputs)
-
-    if cmd_exists("rg"):
-        return get_args_rg(inputs)
-    elif cmd_exists("ag"):
         return get_args_ag(inputs)
-    elif cmd_exists("ack"):
-        return get_args_ack(inputs)
-    elif cmd_exists("git"):
-        return get_args_ack(inputs)
+    else:
+        return get_args_rg(inputs)
 
 def run_command_linux(command, cwd, encode='utf8'):
     try:
