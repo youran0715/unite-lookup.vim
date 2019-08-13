@@ -4,21 +4,24 @@ import subprocess
 import re
 import os
 import vim
+import platform;
 
-cache = {}
+isWindows = platform.system() == "Windows"
 
 def gather_candidates():
     inputs = vim.eval("s:inputs")
     limit = 100
     rows = do_gather_candidates(inputs, limit)
+    # rows = do_gather_candidates("can", 10)
 
     # print(rows)
-    vimrez = [str(row).replace('\\', '\\\\').replace('"', '\\"') for row in rows]
+    vimrez = [str(row).replace('\\', '\\\\') for row in rows]
 
     vim.command('let s:rez = [%s]' % ','.join(vimrez))
 
+cache = {}
+
 def do_gather_candidates(inputs, limit):
-    inputs = inputs.strip()
     kws = re.split('\s', inputs)
 
     if inputs == "" or len(kws) < 1:
@@ -30,19 +33,23 @@ def do_gather_candidates(inputs, limit):
     global cache
     output = []
     # print(kws[0][:-1])
-    if kws[0] in cache:
-        output = cache[kws[0]]
-    elif kws[0][:-1] in cache:
-        # print(kws[0][:-1])
-        output = cache[kws[0][:-1]]
+    if inputs in cache:
+        output = cache[inputs]
+    elif inputs[:-1] in cache:
+        output = cache[inputs[:-1]]
     else:
         args = get_args(kws[0])
-        output = run_command(args, os.getcwd())
-        cache[kws[0]] = output
+        if not isWindows:
+            output = run_command_linux(args, os.getcwd())
+        else:
+            output = run_command_windows(args, os.getcwd())
 
     rows = []
+    rowsMatch = []
     progs = []
     for kw in kws:
+        if kw == "":
+            continue
         progs.append(get_regex_prog(kw, True))
 
     for line in output:
@@ -51,10 +58,11 @@ def do_gather_candidates(inputs, limit):
         # print("line:%s" % line)
         format = __candidate(line, progs)
         if format is not None:
-            rows.append(format)
+            rowsMatch.append(line)
+            if len(rows) <= limit:
+                rows.append(format)
 
-        if len(rows) > limit:
-            break
+    cache[inputs] = rowsMatch
 
     return rows
 
@@ -77,10 +85,10 @@ def __candidate(line, progs):
         if len(items) < 4:
             return None
 
-        path = items[0]
+        path = items[0].strip()
         row = items[1]
         col = items[2]
-        body = ''.join(items[3::])
+        body = ''.join(items[3::]).replace('\r', '').replace('\\', '').strip()
 
         bodylower = body.lower()
         for prog in progs:
@@ -97,7 +105,7 @@ def __candidate(line, progs):
                     ),
                 'action__path': path,
                 'action__line': int(row),
-                'action__col': 0,
+                'action__col': int(col),
                 'action__text': body
                 }
     except TypeError as e:
@@ -120,6 +128,9 @@ def get_args_git(inputs):
     return args
 
 def get_args(inputs):
+    if isWindows:
+        return get_args_rg(inputs)
+
     if cmd_exists("rg"):
         return get_args_rg(inputs)
     elif cmd_exists("ag"):
@@ -129,7 +140,7 @@ def get_args(inputs):
     elif cmd_exists("git"):
         return get_args_ack(inputs)
 
-def run_command(command, cwd, encode='utf8'):
+def run_command_linux(command, cwd, encode='utf8'):
     try:
         process = subprocess.run(command,
                 cwd=cwd,
@@ -139,11 +150,28 @@ def run_command(command, cwd, encode='utf8'):
     except Exception as e:
         return []
 
+def run_command_windows(command, cwd, encode='utf8'):
+    try:
+        filename = 'ripgrep.txt'
+        cmd = ' '.join(command) + ' > ' + filename
+
+        os.system(cmd)
+
+        with open(filename,'r') as f:
+            lines = f.read().splitlines()
+            f.close()
+            os.remove(filename)
+            return lines
+
+        return []
+    except Exception as e:
+        return []
+
 def cmd_exists(cmd):
     return subprocess.call("type " + cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
 def main():
-    res = do_gather_candidates("exists cmd", 10)
+    res = do_gather_candidates("can", 100)
     # print(res)
     pass
 
