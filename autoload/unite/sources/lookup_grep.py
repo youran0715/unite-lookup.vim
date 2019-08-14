@@ -72,7 +72,7 @@ def do_gather_candidates(inputs, limit):
         if not isWindows:
             output = run_command_linux(args, os.getcwd())
         else:
-            output = run_command_windows(args, os.getcwd())
+            output = run_command_linux(args, os.getcwd())
 
     rows = []
     rowsMatch = []
