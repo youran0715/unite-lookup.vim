@@ -69,7 +69,10 @@ def do_gather_candidates(inputs, limit):
     if not isCache:
         isSetCache = True
         args = get_args(kws[0])
-        output = run_command_linux(args, os.getcwd())
+        if not isWindows:
+            output = run_command_linux(args, os.getcwd())
+        else:
+            output = run_command_windows(args, os.getcwd())
 
     rows = []
     rowsMatch = []
@@ -181,18 +184,10 @@ def run_command_linux(command, cwd, encode='utf8'):
 
 def run_command_windows(command, cwd, encode='utf8'):
     try:
-        filename = 'ripgrep.txt'
-        cmd = ' '.join(command) + ' > ' + filename
+        cmd = ' '.join(command)
 
-        os.system(cmd)
-
-        with open(filename,'r') as f:
-            lines = f.read().splitlines()
-            f.close()
-            os.remove(filename)
-            return lines
-
-        return []
+        output = vim.call("vimproc#system", cmd)
+        return output.split('\n')
     except Exception as e:
         return []
 
