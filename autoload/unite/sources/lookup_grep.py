@@ -67,12 +67,12 @@ def do_gather_candidates(inputs, limit):
     progsKw = []
     for kw in kws:
         if kw != "":
-            progsKw.append(get_regex_prog(kw, True))
+            progsKw.append(get_grep_regex_prog(kw, True))
 
     progsPath = []
     for path in paths:
         if path != "":
-            progsPath.append(get_regex_prog(path, True))
+            progsPath.append(get_grep_regex_prog(path, True))
 
     for line in output:
         if line.strip() == "":
@@ -91,15 +91,12 @@ def do_gather_candidates(inputs, limit):
     return rows
 
 _escape = dict((c , "\\" + c) for c in ['^','$','.','{','}','(',')','[',']','\\','/','+'])
-def get_regex_prog(kw, islower):
+def get_grep_regex_prog(kw, islower):
     searchkw = kw.lower() if islower else kw
 
     regex = ''
     escaped = [_escape.get(c, c) for c in searchkw]
 
-    # if len(searchkw) > 1:
-        # regex = ''.join([c + "[^" + c + "]*" for c in escaped[:-1]])
-    # regex += escaped[-1]
     regex = ''.join(escaped)
 
     return re.compile(regex)

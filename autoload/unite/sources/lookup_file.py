@@ -235,11 +235,10 @@ def UnitePyGetResult():
         'action__path': get_path(row),
         } for row in rows_file if row not in rows_mru ])
 
-    vimrez = [str(line).replace('\\', '\\\\').replace('"', '\\"') for line in lines]
-    vim.command('let s:rez = [%s]' % ','.join(vimrez))
+    vim.command('let s:rez = {0}'.format(lines))
 
     end_time = time.time()
-    vim.command('echo "search %s cost %.1f ms"' % (inputs, (end_time - start_time)*1000))
+    vim.command('echo "search %s cost %.1f ms, return %d rows"' % (inputs, (end_time - start_time)*1000, len(lines)))
 
 def UnitePyGetFileList():
     dir_path = vim.eval('s:dir_path')
