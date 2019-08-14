@@ -17,6 +17,10 @@ function! unite#sources#lookup_grep#define()
 endfunction
 
 function! s:source_grep.gather_candidates(args, context)
+    if a:context.is_redraw
+        execute 'python3 clear_cache()'
+    endif
+
     let s:rez = []
     let s:inputs = a:context["input"]
 

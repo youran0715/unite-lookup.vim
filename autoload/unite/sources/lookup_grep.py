@@ -4,6 +4,7 @@ import subprocess
 import re
 import os
 import vim
+import time
 import platform;
 
 isWindows = platform.system() == "Windows"
@@ -17,46 +18,75 @@ def gather_candidates():
     vim.command('let s:rez = {0}'.format(rows))
 
 cache = {}
+cacheTime = {}
+def clear_cache():
+    global cache
+    global cacheTime
+    cacheTime = {}
+    cache = {}
 
 def do_gather_candidates(inputs, limit):
-    kws = re.split('\s', inputs)
+    if inputs == "" or inputs == ";" or inputs.strip() == "":
+        return [{'word': 'Please input keyword'}]
 
-    if inputs == "" or len(kws) < 1:
+    inputItmes = inputs.split(';')
+    inputKw = inputItmes[0] if len(inputItmes) > 0 else ""
+    inputPath = inputItmes[1] if len(inputItmes) > 1 else ""
+
+    kws = re.split('\s', inputKw)
+    paths = re.split('\s', inputPath)
+
+    if len(kws) < 1:
         return [{'word': 'Please input keyword'}]
 
     if len(kws[0]) <= 2:
         return [{'word': inputs, 'abbr': 'Please input at least 3 chars'}]
 
     global cache
+    global cacheTime
+    isCache = False
+    isSetCache = False
+    keyCache = inputs[:-1]
     output = []
     # print(kws[0][:-1])
-    if inputs in cache:
+    if inputs in cacheTime and time.time() - cacheTime[inputs] < 300:
         output = cache[inputs]
-    elif inputs[:-1] in cache:
+        isCache = True
+    elif keyCache in cacheTime and time.time() - cacheTime[keyCache] < 300:
+        isCache = True
+        isSetCache = True
         output = cache[inputs[:-1]]
-    else:
+
+    if not isCache:
+        isSetCache = True
         args = get_args(kws[0])
         output = run_command_linux(args, os.getcwd())
 
     rows = []
     rowsMatch = []
-    progs = []
+    progsKw = []
     for kw in kws:
-        if kw == "":
-            continue
-        progs.append(get_regex_prog(kw, True))
+        if kw != "":
+            progsKw.append(get_regex_prog(kw, True))
+
+    progsPath = []
+    for path in paths:
+        if path != "":
+            progsPath.append(get_regex_prog(path, True))
 
     for line in output:
         if line.strip() == "":
             continue
         # print("line:%s" % line)
-        format = __candidate(line, progs)
+        format = __candidate(line, progsKw, progsPath)
         if format is not None:
             rowsMatch.append(line)
             if len(rows) <= limit:
                 rows.append(format)
 
-    cache[inputs] = rowsMatch
+    if isSetCache:
+        cache[inputs] = rowsMatch
+        cacheTime[inputs] = time.time()
 
     return rows
 
@@ -67,13 +97,14 @@ def get_regex_prog(kw, islower):
     regex = ''
     escaped = [_escape.get(c, c) for c in searchkw]
 
-    if len(searchkw) > 1:
-        regex = ''.join([c + "[^" + c + "]*" for c in escaped[:-1]])
-    regex += escaped[-1]
+    # if len(searchkw) > 1:
+        # regex = ''.join([c + "[^" + c + "]*" for c in escaped[:-1]])
+    # regex += escaped[-1]
+    regex = ''.join(escaped)
 
     return re.compile(regex)
 
-def __candidate(line, progs):
+def __candidate(line, progsKw, progsPath):
     try:
         line = line.replace('"', '')
         items = line.split(':')
@@ -86,18 +117,21 @@ def __candidate(line, progs):
         body = ''.join(items[3::]).replace('\r', '').strip()
 
         bodylower = body.lower()
-        for prog in progs:
+        for prog in progsKw:
             result = prog.search(bodylower)
             if not result:
                 return None
 
+        if len(progsPath) > 0:
+            pathlower = path.lower()
+            for prog in progsPath:
+                result = prog.search(pathlower)
+                if not result:
+                    return None
+
         return {
-                "word": body,
-                "abbr": "{0}:{1}: {2}".format(
-                    path,
-                    row,
-                    body
-                    ),
+                "word": line,
+                "abbr": "{0}:{1} {2}".format(path, row, body),
                 "kind": "jump_list",
                 "action__path": path,
                 "action__line": int(row),
