@@ -221,7 +221,7 @@ def UnitePyGetResult():
 
     lines = [{
         'word': row[0],
-        'abbr': ('[M] %s' % get_path(row)),
+        'abbr': ('[M] %s' % get_path(row)).replace('\\', '/'),
         'kind': 'file',
         'group': 'file',
         'action__path': get_path(row),
@@ -229,7 +229,7 @@ def UnitePyGetResult():
 
     lines.extend([{
         'word': row[0],
-        'abbr': get_path(row),
+        'abbr': get_path(row).replace('\\', '/'),
         'kind': 'file',
         'group': 'file',
         'action__path': get_path(row),
