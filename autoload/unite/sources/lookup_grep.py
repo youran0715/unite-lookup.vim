@@ -44,6 +44,15 @@ def do_gather_candidates(inputs, limit):
 
     global cache
     global cacheTime
+
+    # clean cache
+    cacheTemp = {}
+    for key in cache:
+        if time.time() - cacheTime[key] < 300:
+            cacheTemp[key] = cache[key]
+
+    cache = cacheTemp
+
     isCache = False
     isSetCache = False
     keyCache = inputs[:-1]
