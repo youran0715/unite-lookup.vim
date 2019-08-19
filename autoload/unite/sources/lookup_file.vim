@@ -28,7 +28,7 @@ function! unite#sources#lookup_file#vim_enter()
     if !s:is_inited
         let s:file_path = s:get_cache_path_mrulist()
         if filereadable(s:file_path)
-            execute 'python3 UnitePyLoadMrus()'
+            execute 'python3 UnitePyLookupFileLoadMrus()'
         endif
         let s:is_inited = 1
     endif
@@ -36,12 +36,12 @@ endfunction
 
 function! unite#sources#lookup_file#vim_leave()
     let s:file_path = s:get_cache_path_mrulist()
-    execute 'python3 UnitePySaveMrus()'
+    execute 'python3 UnitePyLookupFileSaveMrus()'
 endfunction
 
 function! unite#sources#lookup_file#clean_mru()
     let s:file_path = s:get_cache_path_mrulist()
-    execute 'python3 UnitePyCleanMrus()'
+    execute 'python3 UnitePyLookupFileCleanMrus()'
 endfunction
 
 function! unite#sources#lookup_file#buf_enter()
@@ -50,7 +50,7 @@ function! unite#sources#lookup_file#buf_enter()
         return
     endif
 
-    execute 'python3 UnitePyAddMru()'
+    execute 'python3 UnitePyLookupFileAddMru()'
 endfunction
 
 " define source
@@ -95,7 +95,7 @@ function! s:refresh_filelist()
     let s:dir_path= escape(fnamemodify("./", ":p"), ' \')
 
     let s:dir_path= fnamemodify("./", ":p")
-    execute 'python3 UnitePyGetFileList()'
+    execute 'python3 UnitePyLookupFileGetFileList()'
 endfunction
 
 " source file & mru
@@ -119,7 +119,7 @@ endfunction
 
 function! s:load_filelist()
     let s:file_path = s:get_cache_path_filelist()
-    execute 'python3 UnitePyLoad()'
+    execute 'python3 UnitePyLookupFileLoad()'
 endfunction
 
 let s:is_load_file = 0
@@ -136,7 +136,7 @@ function! s:source_filemru.gather_candidates(args, context)
 
     let s:inputs = a:context['input']
     let s:rez = []
-    execute 'python3 UnitePyGetResult()'
+    execute 'python3 UnitePyLookupFileGetResult()'
 
     return s:rez
 endfunction
