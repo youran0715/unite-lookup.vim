@@ -18,13 +18,13 @@ endfunction
 
 function! s:source_grep.gather_candidates(args, context)
     if a:context.is_redraw
-        execute 'python3 clear_cache()'
+        execute 'python3 LookupGrepClean()'
     endif
 
     let s:rez = []
     let s:inputs = a:context["input"]
 
-    execute 'python3 gather_candidates()'
+    execute 'python3 LookupGrepGatherCandidates()'
 
     return s:rez
 endfunction
