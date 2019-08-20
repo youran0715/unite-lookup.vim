@@ -97,7 +97,7 @@ class LookupGrep(object):
         searchkw = kw.lower() if islower else kw
 
         regex = ''
-        escaped = [_escape.get(c, c) for c in searchkw]
+        escaped = [self._escape.get(c, c) for c in searchkw]
 
         regex = ''.join(escaped)
 
