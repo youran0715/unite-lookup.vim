@@ -3,26 +3,36 @@
 
 import time
 
-class Cache(object):
+class LookupCache(object):
     def __init__(self):
         self.clear()
 
-    def set_result(self, key, result, expire):
+    def set_result(self, key, result):
         self.results[key] = result
-        self.expires[key] = time.time() + expire
 
     def get_result(self, key):
         return self.results[key] if key in self.results else []
 
-    def exist(self, key):
-        if key not in self.expires:
-            return False
+    def exist_result(self, key):
+        return True if key in self.results else False
 
-        if self.expires[key] < time.time():
-            return False
+    def set_candidates(self, key, candidates):
+        self.candidates[key] = candidates
 
-        return True
+    def get_candidates(self, key):
+        return self.candidates[key] if key in self.candidates else []
+
+    def get_pre_candidates(self, key):
+        if key == "":
+            return []
+
+        key_pre = key[:-1]
+
+        return self.get_candidates( key_pre )
+
+    def exist_candidates(self, key):
+        return True if key in self.candidates else False
 
     def clear(self):
         self.results = {}
-        self.expires = {}
+        self.candidates = {}
