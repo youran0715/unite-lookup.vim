@@ -16,6 +16,7 @@ class Lookup(object):
         self.max_candidates = 50
         self.min_input = 0
         self.is_path_split = False
+        self.enable_filter_path = False
 
         self.filter = None
 
@@ -67,15 +68,53 @@ class Lookup(object):
 
         return True
 
+    def format(self, rows):
+        return [{'word': row} for row in rows]
+
+    def filter_candidates(self, candidates):
+        rows = []
+        for item in candidates:
+            ok = True
+            score_total = 0
+            for prog in self.re_kws:
+                score = self.filter.get_score_kw(prog, item)
+                if score == 0:
+                    ok = False
+                    break
+                score_total += score
+
+            if not ok:
+                continue
+
+            if self.enable_filter_path:
+                for prog in self.re_paths:
+                    score = self.filter.get_score_path(prog, item)
+                    if score == 0:
+                        ok = False
+                        break
+                    score_total += score
+
+                if not ok:
+                    continue
+
+            rows.append(item)
+        return rows
 
     def search(self, inputs):
         self.inputs = inputs
-
         self.parse_inputs()
+
         if not self.is_input_length_ok():
             return [{'word': inputs, 'abbr': 'Please input at least %d chars' % self.min_input}]
 
-        pass
+        if self.is_input_empty():
+            rows = self.candidates if len(self.candidates) <= self.max_candidates else self.candidates[:self.max_candidates]
+            return self.format(rows)
+
+        candidates = self.candidates
+        rows = self.filter_candidates(candidates)
+
+        return self.format(rows)
 
     def calc_score_by_name_with_dir(self, reprog, filename, dirname):
         result = reprog.search(filename)

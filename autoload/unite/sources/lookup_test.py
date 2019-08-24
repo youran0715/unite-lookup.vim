@@ -13,6 +13,7 @@ def main():
             'github.com/youran0715/vim',
         ]
 
+    print(goimport.search(""))
     print(goimport.search("str"))
 
 if __name__ == "__main__":

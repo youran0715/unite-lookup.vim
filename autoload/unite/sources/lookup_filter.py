@@ -18,6 +18,12 @@ class LookupFilter(object):
     def is_search_lower(self, kw):
         return False if self.contain_upper(kw) else True
 
+    def get_score_kw(self, regrog, item):
+        return 1.0
+
+    def get_score_path(self, regrog, item):
+        return 1.0
+
     def get_regex(self, kw):
         islower = self.is_search_lower(kw)
         searchkw = kw.lower() if islower else kw
