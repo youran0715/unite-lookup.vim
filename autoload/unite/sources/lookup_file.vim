@@ -52,7 +52,10 @@ endfunction
 
 " define source
 function! unite#sources#lookup_file#define()
-    return [s:source_filemru]
+    let srcs = []
+    call add(srcs, s:define_source('look/fm', ['mru', 'file', 'goimport']))
+    call add(srcs, s:define_source('look/goimport', ['goimport']))
+    return srcs
 endfunction
 
 function! s:get_cache_dir()
@@ -62,33 +65,36 @@ endfunction
 let s:lookup_plugin_path = escape(expand('<sfile>:p:h'), '\')
 execute 'py3file ' . s:lookup_plugin_path . '/lookup_vim.py'
 
-" source file & mru
-let s:source_filemru = {
-    \   'name': 'look/fm',
-    \   'description': 'candidates from lookup file and mru',
-    \   'max_candidates': 50,
-    \   'hooks': {},
-    \   'kind': 'file',
-    \   'syntax': 'uniteSource__LookupFile',
-    \   'is_volatile': 1,
-\}
+fun s:define_source(name, src_names)
+    let src = {
+        \   'name': a:name,
+        \   'description': 'candidates from lookup ' . a:name,
+        \   'max_candidates': 20,
+        \   'hooks': {},
+        \   'syntax': 'uniteSource__Lookup',
+        \   'is_volatile': 1,
+        \}
 
-function! s:source_filemru.hooks.on_init(args, context)
-    let a:context.exclude_mru  = 1
-    let a:context.current_buffer = fnamemodify(bufname('%'), ":p")
+    execute 'python3 UnitePyLookupDefineSource()'
+
+    let src.hooks.on_init = s:src.on_init
+    let src.gather_candidates = s:src.gather_candidates
+
+    return src
+endf
+
+let s:src = {}
+function! s:src.on_init(args, context)
+    let a:context['current_buffer'] = fnamemodify(bufname('%'), ":p")
 endfunction
 
-function! s:source_filemru.gather_candidates(args, context)
+function! s:src.gather_candidates(args, context)
     if a:context.is_redraw
-        execute 'python3 UnitePyLookupMixRedraw()'
+        execute 'python3 UnitePyLookupRedraw()'
     endif
 
-    let s:inputs = a:context['input']
-    let s:buffer = a:context.current_buffer
     let s:rez = []
-
-    execute 'python3 UnitePyLookupMixSearch()'
-
+    execute 'python3 UnitePyLookupSearch()'
     return s:rez
 endfunction
 

@@ -11,7 +11,13 @@ sys.path.append(lookup_plugin_path)
 from lookup_sources import *
 from lookup_mix import *
 
-src_mix = LookupMix()
+sources = {}
+
+def UnitePyLookupDefineSource():
+    name = vim.eval('a:name')
+    src_names = vim.eval('a:src_names')
+    mix = LookupMix(src_names)
+    sources[name] = mix
 
 def UnitePyLookupMruClean():
     src_mru.clean()
@@ -30,22 +36,29 @@ def UnitePyLookupSetCacheDir():
     path = vim.eval('s:cache_dir')
     lookup_set_cache_dir(path)
 
-def UnitePyLookupMixSearch():
-    src_mix.redraw()
+def UnitePyLookupRedraw():
+    context = vim.eval("a:context")
+    source_name = context['source']['name']
+    source = sources[source_name]
+    source.redraw()
 
-def UnitePyLookupMixSearch():
+def UnitePyLookupSearch():
     src_file.wildignore = vim.eval("g:lookupfile_WildIgnore")
     src_file.followlinks = vim.eval("g:lookupfile_FollowLinks")
 
-    inputs = vim.eval("s:inputs")
-    buffer = vim.eval("s:buffer")
-    # print("buffer:", buffer)
+    context = vim.eval("a:context")
+    # print(context)
 
-    src_mix.set_buffer(buffer)
+    source_name = context['source']['name']
+    inputs = context['input']
+
+    source = sources[source_name]
+
+    source.set_buffer(context['current_buffer'])
 
     start_time = time.time()
 
-    rows = src_mix.search(inputs)
+    rows = source.search(inputs)
     vim.command('let s:rez = {0}'.format(rows))
 
     end_time = time.time()

@@ -4,12 +4,15 @@
 from lookup_sources import *
 
 class LookupMix(object):
-    def __init__(self):
-        self.sources = [
-                src_mru,
-                src_file,
-                src_goimport,
-            ]
+    def __init__(self, src_names):
+        self.sources = []
+        for name in src_names:
+            if name == "mru":
+                self.sources.append(src_mru)
+            elif name == "file":
+                self.sources.append(src_file)
+            elif name == "goimport":
+                self.sources.append(src_goimport)
 
     def search(self, inputs):
         results = []

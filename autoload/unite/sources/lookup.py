@@ -15,7 +15,7 @@ class Lookup(object):
         self.re_kws = []
         self.re_paths = []
         self.candidates = []
-        self.max_candidates = 50
+        self.max_candidates = 20
         self.min_input = 0
         self.is_path_split = False
         self.enable_filter_path = False
