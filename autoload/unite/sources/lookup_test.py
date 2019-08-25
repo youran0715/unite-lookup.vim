@@ -13,9 +13,13 @@ def main():
     mix = LookupMix()
 
     print(mix.search("mru"))
-    print(mix.search("string"))
-    print(mix.search("strings"))
-    print(mix.search("strings"))
+    print("------------------")
+    print(mix.search("lookup"))
+    print("------------------")
+    print(mix.search(""))
+    # print(mix.search("string"))
+    # print(mix.search("strings"))
+    # print(mix.search("strings"))
 
 if __name__ == "__main__":
     main()

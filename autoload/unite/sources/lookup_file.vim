@@ -59,8 +59,8 @@ function! s:get_cache_dir()
     return expand($HOME) . "/.cache/vim/lookupfile/"
 endfunction
 
-let s:plugin_path = escape(expand('<sfile>:p:h'), '\')
-execute 'py3file ' . s:plugin_path . '/lookup_vim.py'
+let s:lookup_plugin_path = escape(expand('<sfile>:p:h'), '\')
+execute 'py3file ' . s:lookup_plugin_path . '/lookup_vim.py'
 
 " source file & mru
 let s:source_filemru = {

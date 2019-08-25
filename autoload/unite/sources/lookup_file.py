@@ -70,39 +70,9 @@ class LookupFile(Lookup):
 
     def format(self, rows):
         return [{ 
-            'word': row[0], 
+            'word': lookup_get_name_dir_path(row), 
             'abbr': '[F] %s' % lookup_get_name_dir_abbr(row),
             'kind': 'file',
             'group': 'file',
             'action__path': lookup_get_name_dir_path(row),
             } for row in rows]
-
-# def UnitePyLookupFileLoad():
-#     file_path = vim.eval('s:file_path')
-#     lookupfile.load_filelist(file_path)
-
-# def UnitePyLookupFileGetResult():
-#     start_time = time.time()
-#     inputs = vim.eval('s:inputs').strip()
-#
-#     rows_file = lookupfile.search(lookupfile.files, inputs, 20, True)
-#
-#     lines.extend([{
-#         'word': row[0],
-#         'abbr': lookupfile_get_path(row).replace('\\', '/'),
-#         'kind': 'file',
-#         'group': 'file',
-#         'action__path': lookupfile_get_path(row),
-#         } for row in rows_file if row not in rows_mru ])
-#
-#     vim.command('let s:rez = {0}'.format(lines))
-#
-#     end_time = time.time()
-#     vim.command('echo "search %s cost %.1f ms, return %d rows"' % (inputs, (end_time - start_time)*1000, len(lines)))
-
-# def UnitePyLookupFileGetFileList():
-#     wildignore = vim.eval("g:lookupfile_WildIgnore")
-#     linksflag = vim.eval("g:lookupfile_FollowLinks")
-#
-#     lookupfile.update_filelist(dir_path, file_path, wildignore, linksflag)
-

@@ -48,6 +48,11 @@ class Lookup(object):
     def parse_inputs(self):
         inputs = self.inputs
 
+        self.re_kws = []
+        self.re_paths = []
+        self.input_kws = []
+        self.input_paths = []
+
         if inputs == "" or inputs == ";" or inputs.strip() == "":
             return
 
@@ -57,7 +62,6 @@ class Lookup(object):
 
         self.input_kws = re.split('\s', inputKw)
         self.input_paths = re.split('\s', inputPath)
-
         for kw in self.input_kws:
             if kw != "":
                 self.re_kws.append(self.filter.get_regex(kw))
@@ -87,15 +91,16 @@ class Lookup(object):
         return [{'word': row} for row in rows]
 
     def filter_candidates(self):
-        if self.cache.exist_result(self.inputs):
+        # if self.cache.exist_result(self.inputs):
             # print("use cache")
-            return self.cache.get_result(self.inputs)
+            # return self.cache.get_result(self.inputs)
 
         candidates = []
         if self.cache.exist_pre_candidates(self.inputs):
             # print("use pre candidates")
             candidates = self.cache.get_pre_candidates(self.inputs)
         else:
+            # print("candidates len:%d" % len(self.candidates))
             candidates = self.candidates
 
         rows = []
@@ -149,6 +154,7 @@ class Lookup(object):
 
         if self.is_input_empty():
             rows = self.candidates if len(self.candidates) <= self.max_candidates else self.candidates[:self.max_candidates]
+            # print("input empty rows count:%d" % len(rows))
             return self.format(rows)
 
         rows = self.filter_candidates()
