@@ -35,6 +35,7 @@ class Lookup(object):
 
     def gather_candidates(self):
         self.cache.clear()
+        print("call do_gather_candidates")
         self.candidates = self.do_gather_candidates()
         self.is_load_candidates = True
 

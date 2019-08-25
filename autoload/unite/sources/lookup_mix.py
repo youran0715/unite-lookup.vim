@@ -7,7 +7,8 @@ class LookupMix(object):
     def __init__(self):
         self.sources = [
                 src_mru,
-                src_goimport,
+                src_file,
+                # src_goimport,
             ]
 
     def search(self, inputs):

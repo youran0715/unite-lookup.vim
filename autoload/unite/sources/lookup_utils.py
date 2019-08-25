@@ -15,6 +15,7 @@ def lookup_get_name_dir_path(row):
 def lookup_set_cache_dir(path):
     hl = hashlib.md5()
     hl.update(os.getcwd().encode(encoding='utf-8'))
+    global lookup_cache_dir
     lookup_cache_dir = os.path.join(path, hl.hexdigest())
     try:
         os.makedirs(lookup_cache_dir)

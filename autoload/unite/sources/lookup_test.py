@@ -8,11 +8,11 @@ from lookup_goimport import *
 from lookup_mix import *
 
 def main():
-    src_mru.mru_path = '/home/wuhong/.cache/vim/_home_wuhong_.vim/mrulist2'
-    src_mru.load()
+    lookup_set_cache_dir('/home/wuhong/.cache/vim/lookup')
+
     mix = LookupMix()
 
-    print(mix.search("unite"))
+    print(mix.search("mru"))
     print(mix.search("string"))
     print(mix.search("strings"))
     print(mix.search("strings"))

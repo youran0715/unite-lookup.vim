@@ -16,17 +16,19 @@ class LookupMru(Lookup):
     def get_mru_path(self):
         return lookup_get_cache_path("mru")
 
-    def load(self):
+    def do_gather_candidates(self):
+        candidates = []
         try:
             with open(self.get_mru_path(),'r') as f:
                 lines = f.read().splitlines()
-                self.candidates = []
                 for line in lines:
                     item = (os.path.basename(line), os.path.dirname(line))
-                    self.candidates.append(item)
+                    candidates.append(item)
                 f.close()
         except Exception as e:
             pass
+
+        return candidates
         # print("mrus:", self.candidates)
 
     def save(self):
@@ -56,9 +58,6 @@ class LookupMru(Lookup):
             pass
         self.candidates.insert(0, item)
         self.candidates = self.candidates if len(self.candidates) < self.max_count else self.mrus[0:self.max_count]
-
-    def do_gather_candidates(self):
-        return self.candidates
 
     def format(self, rows):
         return [{ 
