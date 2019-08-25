@@ -27,7 +27,7 @@ class Lookup(object):
         return not self.is_load_candidates
 
     def do_gather_candidates(self):
-        return []
+        return self.candidates
 
     def do_redraw(self):
         pass

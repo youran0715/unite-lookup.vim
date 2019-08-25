@@ -28,8 +28,8 @@ class LookupMru(Lookup):
             pass
 
         # return candidates
-        # print("mrus:", self.candidates)
         self.candidates = candidates
+        # print("mrus:", self.candidates)
 
     def save(self):
         with open(self.get_mru_path(), 'w') as f:
