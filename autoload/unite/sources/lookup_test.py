@@ -5,19 +5,17 @@ from lookup_filter import *
 from lookup_filter_path import *
 from lookup import *
 from lookup_goimport import *
+from lookup_mix import *
 
 def main():
-    goimport = LookupGoimport()
-    goimport.candidates = [
-            'github.scom/tyou/nvim',
-            'github.scom/tyouran0715/rvim',
-            'bufio', 'fmt', 'strings', 'strconv', 
-            'github.com/youran0715/vim',
-        ]
+    src_mru.mru_path = '/home/wuhong/.cache/vim/_home_wuhong_.vim/mrulist2'
+    src_mru.load()
+    mix = LookupMix()
 
-    print(goimport.search("st"))
-    print(goimport.search("str"))
-    print(goimport.search("str"))
+    print(mix.search("unite"))
+    print(mix.search("string"))
+    print(mix.search("strings"))
+    print(mix.search("strings"))
 
 if __name__ == "__main__":
     main()

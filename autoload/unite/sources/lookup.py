@@ -19,14 +19,27 @@ class Lookup(object):
         self.is_path_split = False
         self.enable_filter_path = False
 
+        self.enable = True
+        self.kind = 'none'
         self.filter = None
+        self.is_load_candidates = False
 
-    def load(self):
+    def need_gather_candidates(self):
+        return not self.is_load_candidates
+
+    def do_gather_candidates(self):
+        return []
+
+    def enable_filetype(self, ft):
         pass
+
+    def gather_candidates(self):
+        self.cache.clear()
+        self.candidates = self.do_gather_candidates()
+        self.is_load_candidates = True
 
     def redraw(self):
-        self.cache.clear()
-        pass
+        self.gather_candidates()
 
     def parse_inputs(self):
         inputs = self.inputs
@@ -50,9 +63,6 @@ class Lookup(object):
                 self.re_paths.append(self.filter.get_regex(kw))
 
         return
-
-    def get_result(self, inputs):
-        pass
 
     def is_input_empty(self):
         return len(self.input_kws) == 0 and len(self.input_paths) == 0
@@ -121,11 +131,17 @@ class Lookup(object):
         return result
 
     def search(self, inputs):
+        if not self.enable:
+            return []
+
         self.inputs = inputs
         self.parse_inputs()
 
         if not self.is_input_length_ok():
             return [{'word': inputs, 'abbr': 'Please input at least %d chars' % self.min_input}]
+
+        if self.need_gather_candidates():
+           self.gather_candidates()
 
         if self.is_input_empty():
             rows = self.candidates if len(self.candidates) <= self.max_candidates else self.candidates[:self.max_candidates]

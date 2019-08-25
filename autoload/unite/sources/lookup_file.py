@@ -13,7 +13,6 @@ class LookupFile(object):
         self.files = []
         self.mrus = []
         self.caches = {}
-        self._escape = dict((c , "\\" + c) for c in ['^','$','.','{','}','(',')','[',']','\\','/','+'])
 
     def load_filelist(self, file_path):
         with open(file_path,'r') as f:
@@ -54,46 +53,6 @@ class LookupFile(object):
                     return
 
         self.save_filelist(file_path, file_list)
-
-    def filename_score(self, reprog, filename, dirname):
-        result = reprog.search(filename)
-        if result:
-            score = result.start() * 2
-            score = score + result.end() - result.start() + 1
-            score = score + ( len(filename) + 1 ) / 100.0
-            score = score + ( len(dirname) + 1 ) / 1000.0
-            return 1000.0 / score
-
-        return 0
-
-    def dir_score(self, reprog, line):
-        result = reprog.search(line)
-        if result:
-            score = result.end() - result.start() + 1
-            score = score + ( len(line) + 1 ) / 100.0
-            return 1000.0 / score
-
-        return 0
-
-    def get_regex_prog(self, kw, islower):
-        searchkw = kw.lower() if islower else kw
-
-        regex = ''
-        # Escape all of the characters as necessary
-        escaped = [self._escape.get(c, c) for c in searchkw]
-
-        if len(searchkw) > 1:
-            regex = ''.join([c + "[^" + c + "]*" for c in escaped[:-1]])
-        regex += escaped[-1]
-
-        return re.compile(regex)
-
-    def contain_upper(self, kw):
-        prog = re.compile('[A-Z]+')
-        return prog.search(kw)
-
-    def is_search_lower(self, kw):
-        return False if self.contain_upper(kw) else True
 
     def do_search(self, rows, progs, islower):
         res = []
@@ -149,57 +108,11 @@ class LookupFile(object):
 
         return [line for score, line in heapq.nlargest(limit, rowsWithScore)]
 
-    def add_mru(self, path):
-        file_name = os.path.basename(path)
-        dir_name = os.path.dirname(os.path.relpath(path))
-
-        item = (file_name, dir_name)
-        # print("item:%s" % str(item))
-        try:
-            self.mrus.remove(item)
-        except Exception as e:
-            pass
-        # print("before")
-        # print(mrus)
-        self.mrus.insert(0, item)
-        self.mrus = self.mrus if len(self.mrus) < 30 else self.mrus[0:30]
-        # print("after")
-        # print(mrus)
 
 lookupfile = LookupFile()
 
 def lookupfile_get_path(row):
     return os.path.join(row[1], row[0])
-
-def UnitePyLookupFileAddMru():
-    path = vim.eval('s:buf_path')
-    if os.path.abspath(path).startswith(os.getcwd()):
-        lookupfile.add_mru(path)
-
-def UnitePyLookupFileCleanMrus():
-    lookupfile.mrus = []
-
-def UnitePyLookupFileSaveMrus():
-    file_path = vim.eval('s:file_path')
-    with open(file_path, 'w') as f:
-        for mru in lookupfile.mrus:
-            # vim.command('echo "' + str(mru) + '"')
-            try:
-                f.write("%s\n" % (lookupfile_get_path(mru)))
-            except UnicodeEncodeError:
-                continue
-
-        f.close()
-
-def UnitePyLookupFileLoadMrus():
-    file_path = vim.eval('s:file_path')
-    with open(file_path,'r') as f:
-        lines = f.read().splitlines()
-        lookupfile.mrus = []
-        for line in lines:
-            item = (os.path.basename(line), os.path.dirname(line))
-            lookupfile.mrus.append(item)
-        f.close()
 
 def UnitePyLookupFileLoad():
     file_path = vim.eval('s:file_path')
@@ -213,14 +126,6 @@ def UnitePyLookupFileGetResult():
     rows_mru = lookupfile.search(lookupfile.mrus,  inputs, 20, False)
 
     # print(lookupfile.mrus)
-
-    lines = [{
-        'word': row[0],
-        'abbr': ('[M] %s' % lookupfile_get_path(row)).replace('\\', '/'),
-        'kind': 'file',
-        'group': 'file',
-        'action__path': lookupfile_get_path(row),
-        } for row in rows_mru]
 
     lines.extend([{
         'word': row[0],
