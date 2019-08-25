@@ -11,24 +11,26 @@ class LookupMru(Lookup):
         super(LookupMru, self).__init__()
         self.filter = LookupFilterFilename()
         self.kind = "file"
-        self.mru_path = ""
         self.max_count = 100
 
-        pass
+    def get_mru_path(self):
+        return lookup_get_cache_path("mru")
 
     def load(self):
-        with open(self.mru_path,'r') as f:
-            lines = f.read().splitlines()
-            self.candidates = []
-            for line in lines:
-                item = (os.path.basename(line), os.path.dirname(line))
-                self.candidates.append(item)
-            f.close()
-        print("mrus:", self.candidates)
-        pass
+        try:
+            with open(self.get_mru_path(),'r') as f:
+                lines = f.read().splitlines()
+                self.candidates = []
+                for line in lines:
+                    item = (os.path.basename(line), os.path.dirname(line))
+                    self.candidates.append(item)
+                f.close()
+        except Exception as e:
+            pass
+        # print("mrus:", self.candidates)
 
     def save(self):
-        with open(self.mru_path, 'w') as f:
+        with open(self.get_mru_path(), 'w') as f:
             for mru in self.candidates:
                 try:
                     f.write("%s\n" % lookup_get_name_dir_path(mru))
