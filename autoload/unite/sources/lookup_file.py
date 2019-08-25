@@ -16,10 +16,14 @@ class LookupFile(Lookup):
         self.filter = LookupFilterFilename()
         self.wildignore = {'dir':[], 'file': []}
         self.followlinks = False
+        self.kind = 'file'
         pass
 
     def get_filelist_path(self):
         return lookup_get_cache_path("filelist")
+
+    def do_redraw(self):
+        self.candidates = self.update()
 
     def do_gather_candidates(self):
         candidates = []

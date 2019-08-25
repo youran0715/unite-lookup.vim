@@ -19,7 +19,10 @@ class LookupMix(object):
 
         return results
 
+    def redraw(self):
+        for src in self.sources:
+            src.redraw()
+
     def enable_filetype(self, ft):
         for src in self.sources:
             src.enable_filetype(ft)
-        pass

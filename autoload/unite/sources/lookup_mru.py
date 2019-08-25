@@ -16,7 +16,7 @@ class LookupMru(Lookup):
     def get_mru_path(self):
         return lookup_get_cache_path("mru")
 
-    def do_gather_candidates(self):
+    def load(self):
         candidates = []
         try:
             with open(self.get_mru_path(),'r') as f:
@@ -28,8 +28,9 @@ class LookupMru(Lookup):
         except Exception as e:
             pass
 
-        return candidates
+        # return candidates
         # print("mrus:", self.candidates)
+        self.candidates = candidates
 
     def save(self):
         with open(self.get_mru_path(), 'w') as f:

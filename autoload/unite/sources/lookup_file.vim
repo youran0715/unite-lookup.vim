@@ -16,7 +16,7 @@ if !exists("g:lookupfile_WildIgnore")
 endif
 
 if !exists("g:lookupfile_FollowLinks")
-    let g:lookupfile_FollowLinks=1
+    let g:lookupfile_FollowLinks=v:true
 endif
 
 if !exists("g:lookupfile_IndexTimeLimit")
@@ -26,22 +26,19 @@ endif
 let s:is_inited = 0
 function! unite#sources#lookup_file#vim_enter()
     if !s:is_inited
-        let s:file_path = s:get_cache_path_mrulist()
-        if filereadable(s:file_path)
-            execute 'python3 UnitePyLookupFileLoadMrus()'
-        endif
+        let s:cache_dir = s:get_cache_dir()
+        execute 'python3 UnitePyLookupSetCacheDir()'
+        execute 'python3 UnitePyLookupMruLoad()'
         let s:is_inited = 1
     endif
 endfunction
 
 function! unite#sources#lookup_file#vim_leave()
-    let s:file_path = s:get_cache_path_mrulist()
-    execute 'python3 UnitePyLookupFileSaveMrus()'
+    execute 'python3 UnitePyLookupMruSave()'
 endfunction
 
 function! unite#sources#lookup_file#clean_mru()
-    let s:file_path = s:get_cache_path_mrulist()
-    execute 'python3 UnitePyLookupFileCleanMrus()'
+    execute 'python3 UnitePyLookupMruClean()'
 endfunction
 
 function! unite#sources#lookup_file#buf_enter()
@@ -50,7 +47,7 @@ function! unite#sources#lookup_file#buf_enter()
         return
     endif
 
-    execute 'python3 UnitePyLookupFileAddMru()'
+    execute 'python3 UnitePyLookupMruAdd()'
 endfunction
 
 " define source
@@ -59,44 +56,11 @@ function! unite#sources#lookup_file#define()
 endfunction
 
 function! s:get_cache_dir()
-	set shellslash
-    let cache_dir = expand($HOME) . "/.cache/vim/lookupfile/"
-
-	let cwd = substitute(getcwd(), '/', '_', 'g')
-	let cwd = substitute(cwd, ':', '_', 'g')
-	let dir = cache_dir . cwd . '/'
-
-    if !isdirectory(dir)
-        call mkdir(dir, "p")
-    endif
-
-	if g:is_os_windows
-		set noshellslash
-	endif
-
-    return dir
-endfunction
-
-function! s:get_cache_path_filelist()
-    return s:get_cache_dir() . 'filelist5'
-endfunction
-
-function! s:get_cache_path_mrulist()
-    return s:get_cache_dir() . 'mrulist5'
+    return expand($HOME) . "/.cache/vim/lookupfile/"
 endfunction
 
 let s:plugin_path = escape(expand('<sfile>:p:h'), '\')
-execute 'py3file ' . s:plugin_path . '/lookup_file.py'
-
-function! s:refresh_filelist()
-    let s:file_list=[]
-    let s:file_path = s:get_cache_path_filelist()
-
-    let s:dir_path= escape(fnamemodify("./", ":p"), ' \')
-
-    let s:dir_path= fnamemodify("./", ":p")
-    execute 'python3 UnitePyLookupFileGetFileList()'
-endfunction
+execute 'py3file ' . s:plugin_path . '/lookup_vim.py'
 
 " source file & mru
 let s:source_filemru = {
@@ -112,31 +76,19 @@ let s:source_filemru = {
 function! s:source_filemru.hooks.on_init(args, context)
     let a:context.exclude_mru  = 1
     let a:context.current_buffer = fnamemodify(bufname('%'), ":p")
-    if a:context.is_redraw
-        " call unite#filters#matcher_py_fuzzy#clearcache(s:cache_key)
-    endif
+    let a:context.ft = &ft
 endfunction
 
-function! s:load_filelist()
-    let s:file_path = s:get_cache_path_filelist()
-    execute 'python3 UnitePyLookupFileLoad()'
-endfunction
-
-let s:is_load_file = 0
 function! s:source_filemru.gather_candidates(args, context)
-    if a:context.is_redraw || !filereadable(s:get_cache_path_filelist())
-        call s:refresh_filelist()
-        let s:is_load_file = 0
-    endif
-
-    if s:is_load_file == 0
-        call s:load_filelist()
-        let s:is_load_file = 1
+    if a:context.is_redraw
+        execute 'python3 UnitePyLookupMixRedraw()'
     endif
 
     let s:inputs = a:context['input']
+    let s:ft = a:context.ft
     let s:rez = []
-    execute 'python3 UnitePyLookupFileGetResult()'
+
+    execute 'python3 UnitePyLookupMixSearch()'
 
     return s:rez
 endfunction

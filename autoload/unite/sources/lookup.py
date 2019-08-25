@@ -30,12 +30,15 @@ class Lookup(object):
     def do_gather_candidates(self):
         return []
 
+    def do_redraw(self):
+        pass
+
     def enable_filetype(self, ft):
         pass
 
     def gather_candidates(self):
         self.cache.clear()
-        print("call do_gather_candidates")
+        # print("call do_gather_candidates")
         self.candidates = self.do_gather_candidates()
         self.is_load_candidates = True
 
@@ -85,12 +88,12 @@ class Lookup(object):
 
     def filter_candidates(self):
         if self.cache.exist_result(self.inputs):
-            print("use cache")
+            # print("use cache")
             return self.cache.get_result(self.inputs)
 
         candidates = []
         if self.cache.exist_pre_candidates(self.inputs):
-            print("use pre candidates")
+            # print("use pre candidates")
             candidates = self.cache.get_pre_candidates(self.inputs)
         else:
             candidates = self.candidates
