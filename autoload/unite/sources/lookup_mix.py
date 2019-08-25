@@ -16,14 +16,17 @@ class LookupMix(object):
         dictKind = {}
         for src in self.sources:
             result = src.search(inputs)
-            if src.kind not in dictKind:
-                dictKind[src.kind] = {}
-
-            dictResult = dictKind[src.kind]
 
             # remove duplicate rows
             for row in result:
                 word = row['word']
+                kind = row['kind']
+
+                if kind not in dictKind:
+                    dictKind[kind] = {}
+
+                dictResult = dictKind[kind]
+
                 if word in dictResult:
                     continue
 

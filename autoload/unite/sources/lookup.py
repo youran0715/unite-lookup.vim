@@ -20,7 +20,6 @@ class Lookup(object):
         self.enable_filter_path = False
 
         self.enable = True
-        self.kind = 'none'
         self.filter = None
         self.is_load_candidates = False
 
@@ -88,7 +87,7 @@ class Lookup(object):
         return True
 
     def format(self, rows):
-        return [{'word': row} for row in rows]
+        return [{'word': row, 'kind': 'None'} for row in rows]
 
     def filter_candidates(self):
         # if self.cache.exist_result(self.inputs):

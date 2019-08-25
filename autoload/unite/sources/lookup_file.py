@@ -16,7 +16,6 @@ class LookupFile(Lookup):
         self.filter = LookupFilterFilename()
         self.wildignore = {'dir':[], 'file': []}
         self.followlinks = False
-        self.kind = 'file'
         pass
 
     def get_filelist_path(self):

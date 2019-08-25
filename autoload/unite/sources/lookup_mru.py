@@ -10,7 +10,6 @@ class LookupMru(Lookup):
     def __init__(self):
         super(LookupMru, self).__init__()
         self.filter = LookupFilterFilename()
-        self.kind = "file"
         self.max_count = 100
 
     def get_mru_path(self):
@@ -46,8 +45,8 @@ class LookupMru(Lookup):
         self.candidates = []
 
     def add(self, path):
-        if not os.path.abspath(path).startswith(os.getcwd()):
-            return
+        # if not os.path.abspath(path).startswith(os.getcwd()):
+            # return
 
         file_name = os.path.basename(path)
         dir_name = os.path.dirname(os.path.relpath(path))

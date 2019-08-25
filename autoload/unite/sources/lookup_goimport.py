@@ -25,5 +25,5 @@ class LookupGoimport(Lookup):
             return []
 
     def format(self, rows):
-        return [{'word': row, 'abbr': '[G] %s' % row} for row in rows]
+        return [{'word': row, 'kind':'goimport', 'abbr': '[G] %s' % row} for row in rows]
 
