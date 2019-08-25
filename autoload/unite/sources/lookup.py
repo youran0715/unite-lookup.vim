@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import heapq
 from lookup_cache import *
 
 class Lookup(object):
@@ -71,8 +72,20 @@ class Lookup(object):
     def format(self, rows):
         return [{'word': row} for row in rows]
 
-    def filter_candidates(self, candidates):
+    def filter_candidates(self):
+        if self.cache.exist_result(self.inputs):
+            print("use cache")
+            return self.cache.get_result(self.inputs)
+
+        candidates = []
+        if self.cache.exist_pre_candidates(self.inputs):
+            print("use pre candidates")
+            candidates = self.cache.get_pre_candidates(self.inputs)
+        else:
+            candidates = self.candidates
+
         rows = []
+        rows_cache = []
         for item in candidates:
             ok = True
             score_total = 0
@@ -97,8 +110,15 @@ class Lookup(object):
                 if not ok:
                     continue
 
-            rows.append(item)
-        return rows
+            rows.append((score_total, item))
+            rows_cache.append(item)
+
+        result = [line for score, line in heapq.nlargest(self.max_candidates, rows)]
+
+        self.cache.set_candidates(self.inputs, rows_cache)
+        self.cache.set_result(self.inputs, result)
+
+        return result
 
     def search(self, inputs):
         self.inputs = inputs
@@ -111,8 +131,7 @@ class Lookup(object):
             rows = self.candidates if len(self.candidates) <= self.max_candidates else self.candidates[:self.max_candidates]
             return self.format(rows)
 
-        candidates = self.candidates
-        rows = self.filter_candidates(candidates)
+        rows = self.filter_candidates()
 
         return self.format(rows)
 
