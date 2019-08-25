@@ -38,9 +38,10 @@ def UnitePyLookupMixSearch():
     src_file.followlinks = vim.eval("g:lookupfile_FollowLinks")
 
     inputs = vim.eval("s:inputs")
-    ft = vim.eval("s:ft")
+    buffer = vim.eval("s:buffer")
+    # print("buffer:", buffer)
 
-    src_mix.enable_filetype(ft)
+    src_mix.set_buffer(buffer)
 
     start_time = time.time()
 

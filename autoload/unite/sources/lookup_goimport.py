@@ -12,11 +12,10 @@ class LookupGoimport(Lookup):
         self.kind = "Goimport"
         pass
 
-    def enable_filetype(self, ft):
-        if ft != "go":
-            self.enable = False
-
     def do_gather_candidates(self):
+        if self.get_buffer_filetype() != ".go":
+            return []
+
         try:
             output = subprocess.run(['gopkgs'], stdout=subprocess.PIPE, check=True)
             return output.stdout.decode('utf-8').splitlines()

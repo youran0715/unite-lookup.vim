@@ -76,7 +76,6 @@ let s:source_filemru = {
 function! s:source_filemru.hooks.on_init(args, context)
     let a:context.exclude_mru  = 1
     let a:context.current_buffer = fnamemodify(bufname('%'), ":p")
-    let a:context.ft = &ft
 endfunction
 
 function! s:source_filemru.gather_candidates(args, context)
@@ -85,7 +84,7 @@ function! s:source_filemru.gather_candidates(args, context)
     endif
 
     let s:inputs = a:context['input']
-    let s:ft = a:context.ft
+    let s:buffer = a:context.current_buffer
     let s:rez = []
 
     execute 'python3 UnitePyLookupMixSearch()'

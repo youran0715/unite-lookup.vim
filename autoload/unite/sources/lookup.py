@@ -3,6 +3,7 @@
 
 import re
 import heapq
+import pathlib
 from lookup_cache import *
 
 class Lookup(object):
@@ -18,6 +19,7 @@ class Lookup(object):
         self.min_input = 0
         self.is_path_split = False
         self.enable_filter_path = False
+        self.buffer = ""
 
         self.enable = True
         self.filter = None
@@ -32,8 +34,11 @@ class Lookup(object):
     def do_redraw(self):
         pass
 
-    def enable_filetype(self, ft):
-        pass
+    def set_buffer(self, buffer):
+        self.buffer = buffer
+
+    def get_buffer_filetype(self):
+        return pathlib.Path(self.buffer).suffix
 
     def gather_candidates(self):
         self.cache.clear()

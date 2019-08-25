@@ -39,6 +39,6 @@ class LookupMix(object):
         for src in self.sources:
             src.redraw()
 
-    def enable_filetype(self, ft):
+    def set_buffer(self, buffer):
         for src in self.sources:
-            src.enable_filetype(ft)
+            src.set_buffer(buffer)
