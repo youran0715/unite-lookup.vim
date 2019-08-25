@@ -8,7 +8,9 @@ lookup_cache_dir = ".vimconfig"
 lookup_cwd_cache_dir = ".vimconfig"
 
 def lookup_get_name_dir_abbr(row):
-    return os.path.join(row[1], row[0]).replace('\\', '/')
+    path = os.path.join(row[1], row[0])
+    path = os.path.relpath(path).replace('\\', '/')
+    return path
 
 def lookup_get_name_dir_path(row):
     return os.path.join(row[1], row[0])
