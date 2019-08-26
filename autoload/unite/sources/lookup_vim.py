@@ -8,7 +8,6 @@ lookup_plugin_path = vim.eval("s:lookup_plugin_path")
 sys.path.append(lookup_plugin_path)
 # print(sys.path)
 
-from lookup_sources import *
 from lookup_mix import *
 
 sources = {}

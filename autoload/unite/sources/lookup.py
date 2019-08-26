@@ -20,6 +20,7 @@ class Lookup(object):
         self.is_path_split = False
         self.enable_filter_path = False
         self.buffer = ""
+        self.name = "none"
 
         self.enable = True
         self.filter = None
@@ -95,25 +96,34 @@ class Lookup(object):
         return [{'word': row, 'kind': 'None'} for row in rows]
 
     def filter_candidates(self):
-        # if self.cache.exist_result(self.inputs):
-            # print("use cache")
-            # return self.cache.get_result(self.inputs)
+        if self.cache.exist_result(self.inputs):
+            return self.cache.get_result(self.inputs)
 
         candidates = []
         if self.cache.exist_pre_candidates(self.inputs):
-            # print("use pre candidates")
             candidates = self.cache.get_pre_candidates(self.inputs)
+            # print("%s use pre candidates, len:%d" % (self.name, len(candidates)))
+            # print(candidates)
         else:
             # print("candidates len:%d" % len(self.candidates))
             candidates = self.candidates
 
         rows = []
         rows_cache = []
+        islower = self.filter.is_search_lower(self.inputs)
         for item in candidates:
+            itemcmp = None
+            if type(item) == type("") and islower:
+                itemcmp = item.lower()
+            elif type(item) == type(("", "")) and islower:
+                itemcmp = (item[0].lower(), item[1].lower())
+            else:
+                itemcmp = item
+
             ok = True
             score_total = 0
             for prog in self.re_kws:
-                score = self.filter.get_score_kw(prog, item)
+                score = self.filter.get_score_kw(prog, itemcmp)
                 if score == 0:
                     ok = False
                     break
@@ -124,7 +134,7 @@ class Lookup(object):
 
             if self.enable_filter_path:
                 for prog in self.re_paths:
-                    score = self.filter.get_score_path(prog, item)
+                    score = self.filter.get_score_path(prog, itemcmp)
                     if score == 0:
                         ok = False
                         break

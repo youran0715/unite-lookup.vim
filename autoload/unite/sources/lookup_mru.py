@@ -10,6 +10,7 @@ class LookupMru(Lookup):
     def __init__(self):
         super(LookupMru, self).__init__()
         self.filter = LookupFilterFilename()
+        self.name = "mru"
         self.max_count = 100
 
     def get_mru_path(self):

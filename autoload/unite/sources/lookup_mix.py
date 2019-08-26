@@ -1,7 +1,15 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
 
-from lookup_sources import *
+from lookup_goimport import *
+from lookup_mru import *
+from lookup_file import *
+from lookup_command import *
+
+src_mru = LookupMru()
+src_file = LookupFile()
+src_goimport = LookupGoimport()
+src_command = LookupCommand()
 
 class LookupMix(object):
     def __init__(self, src_names):
@@ -13,6 +21,8 @@ class LookupMix(object):
                 self.sources.append(src_file)
             elif name == "goimport":
                 self.sources.append(src_goimport)
+            elif name == "command":
+                self.sources.append(src_command)
 
     def search(self, inputs):
         results = []

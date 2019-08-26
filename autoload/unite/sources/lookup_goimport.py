@@ -9,7 +9,7 @@ class LookupGoimport(Lookup):
     def __init__(self):
         super(LookupGoimport, self).__init__()
         self.filter = LookupFilterPath()
-        self.kind = "Goimport"
+        self.name = "goimport"
         pass
 
     def do_gather_candidates(self):
