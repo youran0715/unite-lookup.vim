@@ -26,14 +26,14 @@ class Lookup(object):
         self.filter = None
         self.is_load_candidates = False
 
+    def need_clear_cache(self):
+        return False
+
     def need_gather_candidates(self):
         return not self.is_load_candidates
 
     def do_gather_candidates(self):
         return self.candidates
-
-    def do_redraw(self):
-        pass
 
     def set_buffer(self, buffer):
         self.buffer = buffer
@@ -162,6 +162,9 @@ class Lookup(object):
 
         if not self.is_input_length_ok():
             return [{'word': inputs, 'abbr': 'Please input at least %d chars' % self.min_input}]
+
+        if self.need_clear_cache():
+            self.cache.clear()
 
         if self.need_gather_candidates():
            self.gather_candidates()

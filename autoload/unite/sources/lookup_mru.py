@@ -13,6 +13,9 @@ class LookupMru(Lookup):
         self.name = "mru"
         self.max_count = 100
 
+    def need_clear_cache(self):
+        return True
+
     def get_mru_path(self):
         return lookup_get_cache_path("mru")
 
