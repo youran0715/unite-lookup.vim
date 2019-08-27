@@ -16,6 +16,7 @@ class LookupGrep(Lookup):
         self.filter = LookupFilterGrep()
         self.name = "grep"
         self.min_input = 3
+        self.enable_filter_path = True
 
     def need_sort(self):
         return False
@@ -24,7 +25,6 @@ class LookupGrep(Lookup):
         return not self.cache.exist_result(self.inputs) and not self.cache.exist_pre_candidates(self.inputs)
 
     def do_gather_candidates(self):
-        return []
         output = []
         args = self.get_args(self.input_kws[0])
         if not isWindows:
@@ -33,7 +33,6 @@ class LookupGrep(Lookup):
             output = self.run_command_linux(args, os.getcwd())
 
         rows = []
-        rowsMatch = []
         for line in output:
             item = self.parse_line(line)
             if item is not None:

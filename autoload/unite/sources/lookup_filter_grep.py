@@ -7,7 +7,6 @@ from lookup_filter import *
 class LookupFilterGrep(LookupFilter):
     def __init__(self):
         super(LookupFilterGrep, self).__init__()
-        pass
 
     def get_score_kw(self, reprog, item):
         result = reprog.search(item[3])
