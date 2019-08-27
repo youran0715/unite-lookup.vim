@@ -25,6 +25,7 @@ class Lookup(object):
         self.enable = True
         self.filter = None
         self.is_load_candidates = False
+        self.is_redraw = False
 
     def need_sort(self):
         return True
@@ -35,7 +36,7 @@ class Lookup(object):
     def need_gather_candidates(self):
         return not self.is_load_candidates
 
-    def do_gather_candidates(self):
+    def do_gather_candidates(self, is_redraw = False):
         return self.candidates
 
     def set_buffer(self, buffer):
@@ -46,12 +47,13 @@ class Lookup(object):
 
     def gather_candidates(self):
         self.cache.clear()
-        # print("call do_gather_candidates")
-        self.candidates = self.do_gather_candidates()
+        self.candidates = self.do_gather_candidates(self.is_redraw)
         self.is_load_candidates = True
+        self.is_redraw = False
 
     def redraw(self):
-        self.gather_candidates()
+        self.is_load_candidates = False
+        self.is_redraw = True
 
     def parse_inputs(self):
         inputs = self.inputs

@@ -15,7 +15,7 @@ class LookupCommand(Lookup):
         self.name = "command"
         pass
 
-    def do_gather_candidates(self):
+    def do_gather_candidates(self, is_redraw):
         tmp = vim.eval("@x")
         vim.command("redir @x")
 

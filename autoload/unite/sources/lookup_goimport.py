@@ -14,7 +14,7 @@ class LookupGoimport(Lookup):
     def need_gather_candidates(self):
         return not self.is_load_candidates and self.get_buffer_filetype() == ".go"
 
-    def do_gather_candidates(self):
+    def do_gather_candidates(self, is_redraw):
         try:
             output = subprocess.run(['gopkgs'], stdout=subprocess.PIPE, check=True)
             return output.stdout.decode('utf-8').splitlines()

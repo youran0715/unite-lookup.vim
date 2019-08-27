@@ -22,12 +22,9 @@ class LookupFile(Lookup):
     def get_filelist_path(self):
         return lookup_get_cache_path("filelist")
 
-    def do_redraw(self):
-        self.candidates = self.update()
-
-    def do_gather_candidates(self):
+    def do_gather_candidates(self, is_redraw):
         candidates = []
-        if os.path.exists(self.get_filelist_path()):
+        if not is_redraw and os.path.exists(self.get_filelist_path()):
             try:
                 with open(self.get_filelist_path(),'r') as f:
                     lines = f.read().splitlines()
