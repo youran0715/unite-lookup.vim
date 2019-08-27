@@ -10,7 +10,6 @@ class LookupGoimport(Lookup):
         super(LookupGoimport, self).__init__()
         self.filter = LookupFilterPath()
         self.name = "goimport"
-        pass
 
     def need_gather_candidates(self):
         return not self.is_load_candidates and self.get_buffer_filetype() == ".go"

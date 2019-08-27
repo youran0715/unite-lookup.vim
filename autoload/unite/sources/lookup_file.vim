@@ -56,6 +56,7 @@ function! unite#sources#lookup_file#define()
     call add(srcs, s:define_source('look/fm', ['mru', 'file', 'goimport', 'command']))
     call add(srcs, s:define_source('look/goimport', ['goimport']))
     call add(srcs, s:define_source('look/command', ['command']))
+    call add(srcs, s:define_source('look/grep', ['grep']))
     return srcs
 endfunction
 

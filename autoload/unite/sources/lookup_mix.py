@@ -4,10 +4,12 @@
 from lookup_goimport import *
 from lookup_mru import *
 from lookup_file import *
+from lookup_grep import *
 from lookup_command import *
 
 src_mru = LookupMru()
 src_file = LookupFile()
+src_grep = LookupGrep()
 src_goimport = LookupGoimport()
 src_command = LookupCommand()
 
@@ -23,6 +25,8 @@ class LookupMix(object):
                 self.sources.append(src_goimport)
             elif name == "command":
                 self.sources.append(src_command)
+            elif name == "grep":
+                self.sources.append(src_grep)
 
     def search(self, inputs):
         results = []

@@ -26,6 +26,9 @@ class Lookup(object):
         self.filter = None
         self.is_load_candidates = False
 
+    def need_sort(self):
+        return True
+
     def need_clear_cache(self):
         return False
 
@@ -117,6 +120,8 @@ class Lookup(object):
                 itemcmp = item.lower()
             elif type(item) == type(("", "")) and islower:
                 itemcmp = (item[0].lower(), item[1].lower())
+            elif type(item) == type(("", "", "", "")) and islower:
+                itemcmp = (item[0].lower(), item[1].lower(), item[2].lower(), item[3].lower())
             else:
                 itemcmp = item
 
@@ -146,7 +151,13 @@ class Lookup(object):
             rows.append((score_total, item))
             rows_cache.append(item)
 
-        result = [line for score, line in heapq.nlargest(self.max_candidates, rows)]
+        result = []
+        if self.need_sort():
+            result = [line for score, line in heapq.nlargest(self.max_candidates, rows)]
+        else:
+            result = [line for score, line in rows]
+            if len(result) > self.max_candidates:
+                result = result[:self.max_candidates]
 
         self.cache.set_candidates(self.inputs, rows_cache)
         self.cache.set_result(self.inputs, result)
@@ -161,7 +172,7 @@ class Lookup(object):
         self.parse_inputs()
 
         if not self.is_input_length_ok():
-            return [{'word': inputs, 'abbr': 'Please input at least %d chars' % self.min_input}]
+            return [{'kind': 'none', 'word': 'Please input at least %d chars' % self.min_input}]
 
         if self.need_clear_cache():
             self.cache.clear()
