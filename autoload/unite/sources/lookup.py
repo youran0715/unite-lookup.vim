@@ -69,11 +69,11 @@ class Lookup(object):
         self.input_paths = re.split('\s', inputPath)
         for kw in self.input_kws:
             if kw != "":
-                self.re_kws.append(self.filter.get_regex(kw))
+                self.re_kws.append(self.filter.get_regex_kw(kw))
 
         for kw in self.input_paths:
             if kw != "":
-                self.re_paths.append(self.filter.get_regex(kw))
+                self.re_paths.append(self.filter.get_regex_path(kw))
 
         return
 

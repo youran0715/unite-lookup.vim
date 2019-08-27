@@ -24,7 +24,23 @@ class LookupFilter(object):
     def get_score_path(self, regrog, item):
         return 1.0
 
-    def get_regex(self, kw):
+    def get_regex_kw(self, kw):
+        islower = self.is_search_lower(kw)
+        searchkw = kw.lower() if islower else kw
+
+        regex = ''
+        escaped = [self._escape.get(c, c) for c in searchkw]
+
+        if self.is_fuzzy:
+            if len(searchkw) > 1:
+                regex = ''.join([c + "[^" + c + "\/]*" for c in escaped[:-1]])
+            regex += escaped[-1]
+        else:
+            regex = ''.join(escaped)
+
+        return re.compile(regex)
+
+    def get_regex_path(self, kw):
         islower = self.is_search_lower(kw)
         searchkw = kw.lower() if islower else kw
 
