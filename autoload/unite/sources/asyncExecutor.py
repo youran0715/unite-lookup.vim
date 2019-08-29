@@ -8,7 +8,7 @@ import signal
 import threading
 import itertools
 import subprocess
-from .leaderf_utils import *
+from leaderf_utils import *
 
 if sys.version_info >= (3, 0):
     import queue as Queue
@@ -25,7 +25,7 @@ class AsyncExecutor(object):
         self._errQueue = Queue.Queue()
         self._process = None
         self._finished = False
-        self._max_count = int(lfEval("g:Lf_MaxCount"))
+        self._max_count = 100000
 
     def _readerThread(self, fd, queue):
         try:

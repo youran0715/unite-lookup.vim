@@ -65,7 +65,7 @@ class LookupMru(Lookup):
 
     def format(self, rows):
         return [{ 
-            'word': lookup_get_name_dir_path(row), 
+            'word': lookup_get_name_dir_abs_path(row), 
             'abbr': '[M] %s' % lookup_get_name_dir_abbr(row),
             'kind': 'file',
             'group': 'file',

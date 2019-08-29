@@ -15,6 +15,9 @@ def lookup_get_name_dir_abbr(row):
 def lookup_get_name_dir_path(row):
     return os.path.join(row[1], row[0]).replace('\\', '/')
 
+def lookup_get_name_dir_abs_path(row):
+    return os.path.abspath(os.path.join(row[1], row[0]))
+
 def lookup_set_cache_dir(path):
     global lookup_cache_dir
     global lookup_cwd_cache_dir

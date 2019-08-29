@@ -11,7 +11,7 @@ import multiprocessing
 import subprocess
 from lookup import *
 from lookup_filter_path import *
-from .asyncExecutor import AsyncExecutor
+from asyncExecutor import AsyncExecutor
 
 class LookupBufTag(Lookup):
     def __init__(self):
