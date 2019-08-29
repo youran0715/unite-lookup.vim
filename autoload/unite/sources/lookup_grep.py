@@ -50,7 +50,7 @@ class LookupGrep(Lookup):
             path = items[0].strip()
             row = items[1]
             col = items[2]
-            body = ''.join(items[3::]).replace('\r', '').strip()
+            body = ''.join(items[3::]).replace('\r', '').replace('\t', '').strip()
 
             return (path, row, col, body)
         except TypeError as e:
