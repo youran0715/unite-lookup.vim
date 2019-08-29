@@ -4,7 +4,6 @@ import subprocess
 import re
 import os
 import time
-import platform;
 from lookup import *
 from lookup_filter_grep import *
 from asyncExecutor import AsyncExecutor
@@ -80,7 +79,7 @@ class LookupGrep(Lookup):
         return args
 
     def get_args(self, inputs):
-        return self.get_args_rg(inputs)
+        return self.get_args_ag(inputs)
 
     def run_command_linux(self, command, cwd, encode='utf8'):
         try:
