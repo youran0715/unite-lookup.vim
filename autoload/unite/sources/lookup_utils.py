@@ -13,7 +13,7 @@ def lookup_get_name_dir_abbr(row):
     return path
 
 def lookup_get_name_dir_path(row):
-    return os.path.abspath(os.path.join(row[1], row[0]))
+    return os.path.join(row[1], row[0]).replace('\\', '/')
 
 def lookup_set_cache_dir(path):
     global lookup_cache_dir
