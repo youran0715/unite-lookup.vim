@@ -7,8 +7,7 @@ import time
 import platform;
 from lookup import *
 from lookup_filter_grep import *
-
-isWindows = platform.system() == "Windows"
+from asyncExecutor import AsyncExecutor
 
 class LookupGrep(Lookup):
     def __init__(self):
@@ -27,10 +26,7 @@ class LookupGrep(Lookup):
     def do_gather_candidates(self, is_redraw):
         output = []
         args = self.get_args(self.input_kws[0])
-        if not isWindows:
-            output = self.run_command_linux(args, os.getcwd())
-        else:
-            output = self.run_command_linux(args, os.getcwd())
+        output = self.run_command_linux(args, os.getcwd())
 
         rows = []
         for line in output:
@@ -84,12 +80,17 @@ class LookupGrep(Lookup):
         return args
 
     def get_args(self, inputs):
-        if isWindows:
-            return self.get_args_ag(inputs)
-        else:
-            return self.get_args_ag(inputs)
+        return self.get_args_rg(inputs)
 
     def run_command_linux(self, command, cwd, encode='utf8'):
+        try:
+            executor = AsyncExecutor()
+            result = executor.execute(' '.join(command))
+            return [line for line in result if line is not None]
+        except Exception as e:
+            return []
+
+    def run_command_linux_old(self, command, cwd, encode='utf8'):
         try:
             process = subprocess.run(command,
                     cwd=cwd,

@@ -19,8 +19,7 @@ class LookupGoimport(Lookup):
         try:
             executor = AsyncExecutor()
             result = executor.execute("gopkgs")
-            output = [line for line in result if line is not None]
-            return output
+            return [line for line in result if line is not None]
         except Exception as e:
             return []
 
