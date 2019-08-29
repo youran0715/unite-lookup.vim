@@ -9,12 +9,10 @@ class LookupFilterGrep(LookupFilter):
         super(LookupFilterGrep, self).__init__()
 
     def get_score_kw(self, reprog, item):
-        result = reprog.search(item[3])
-        return 1 if result else 0
+        return 1 if reprog.search(item[3]) else 0
 
     def get_score_path(self, reprog, item):
-        result = reprog.search(item[0])
-        return 1 if result else 0
+        return 1 if reprog.search(item[0]) else 0
 
     def get_regex_kw(self, kw):
         islower = self.is_search_lower(kw)
