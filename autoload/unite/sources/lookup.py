@@ -26,6 +26,15 @@ class Lookup(object):
         self.filter = None
         self.is_load_candidates = False
         self.is_redraw = False
+        self.is_init_reload = False
+
+    def do_unite_init(self):
+        pass
+
+    def unite_init(self):
+        if self.is_init_reload:
+            self.is_load_candidates = False
+        self.do_unite_init()
 
     def need_sort(self):
         return True

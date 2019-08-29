@@ -53,7 +53,7 @@ endfunction
 " define source
 function! unite#sources#lookup_file#define()
     let srcs = []
-    call add(srcs, s:define_source('look/fm', ['mru', 'file', 'goimport', 'command']))
+    call add(srcs, s:define_source('look/fm', ['mru', 'edit', 'file']))
     call add(srcs, s:define_source('look/goimport', ['goimport']))
     call add(srcs, s:define_source('look/command', ['command']))
     call add(srcs, s:define_source('look/grep', ['grep']))
@@ -88,6 +88,7 @@ endf
 let s:src = {}
 function! s:src.on_init(args, context)
     let a:context['current_buffer'] = fnamemodify(bufname('%'), ":p")
+    execute 'python3 UnitePyLookupInit()'
 endfunction
 
 function! s:src.gather_candidates(args, context)

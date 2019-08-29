@@ -6,8 +6,10 @@ from lookup_mru import *
 from lookup_file import *
 from lookup_grep import *
 from lookup_command import *
+from lookup_edit import *
 
 src_mru = LookupMru()
+src_edit = LookupEdit()
 src_file = LookupFile()
 src_grep = LookupGrep()
 src_goimport = LookupGoimport()
@@ -19,6 +21,8 @@ class LookupMix(object):
         for name in src_names:
             if name == "mru":
                 self.sources.append(src_mru)
+            elif name == "edit":
+                self.sources.append(src_edit)
             elif name == "file":
                 self.sources.append(src_file)
             elif name == "goimport":
@@ -27,6 +31,10 @@ class LookupMix(object):
                 self.sources.append(src_command)
             elif name == "grep":
                 self.sources.append(src_grep)
+
+    def unite_init(self):
+        for src in self.sources:
+            src.unite_init()
 
     def search(self, inputs):
         results = []

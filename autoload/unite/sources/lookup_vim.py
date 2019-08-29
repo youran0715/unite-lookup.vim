@@ -35,6 +35,12 @@ def UnitePyLookupSetCacheDir():
     path = vim.eval('s:cache_dir')
     lookup_set_cache_dir(path)
 
+def UnitePyLookupInit():
+    context = vim.eval("a:context")
+    source_name = context['source']['name']
+    source = sources[source_name]
+    source.unite_init()
+
 def UnitePyLookupRedraw():
     context = vim.eval("a:context")
     source_name = context['source']['name']

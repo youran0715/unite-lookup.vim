@@ -11,13 +11,15 @@ class LookupMru(Lookup):
         super(LookupMru, self).__init__()
         self.filter = LookupFilterFilename()
         self.name = "mru"
-        self.max_count = 100
-
-    def need_clear_cache(self):
-        return True
+        self.max_count = 30
+        self.is_init_reload = True
 
     def get_mru_path(self):
         return lookup_get_cache_path("mru")
+
+    def do_gather_candidates(self, is_redraw):
+        edit_path = os.path.abspath(self.buffer)
+        return [item for item in self.candidates if lookup_get_name_dir_abs_path(item) != edit_path]
 
     def load(self):
         candidates = []
