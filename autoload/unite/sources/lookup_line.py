@@ -31,4 +31,4 @@ class LookupLine(Lookup):
 
     def _getLineList(self, buffer):
         bufname = os.path.basename(buffer.name)
-        return [(bufname, i, 0, line.encode('utf-8', "replace").decode('utf-8', "replace")) for i, line in enumerate(buffer, 1) if line and not line.isspace()]
+        return [(bufname, i, 0, line.replace('"', '')) for i, line in enumerate(buffer, 1) if line and not line.isspace()]
