@@ -181,7 +181,7 @@ class Lookup(object):
         if not self.is_input_length_ok():
             return [{'kind': 'none', 'word': 'Please input at least %d chars' % self.min_input}]
 
-        if self.need_gather_candidates:
+        if self.need_gather_candidates():
            self.gather_candidates()
 
         if self.is_input_empty():

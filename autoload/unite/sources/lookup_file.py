@@ -25,9 +25,6 @@ class LookupFile(Lookup):
 
     def do_unite_init(self):
         candidates = []
-        if not self.is_redraw:
-            return
-
         if os.path.exists(self.get_filelist_path()):
             try:
                 with open(self.get_filelist_path(),'r') as f:
@@ -45,6 +42,7 @@ class LookupFile(Lookup):
         self.is_redraw = False
 
     def do_gather_candidates(self):
+        # print("do_gather_candidates")
         start_time = time.time()
         candidates = []
         dir_path = os.getcwd()
