@@ -54,7 +54,7 @@ endfunction
 function! unite#sources#lookup_file#define()
     let srcs = []
     call add(srcs, s:define_source('look/mix', ['mru', 'edit', 'file', 'goimport', 'command']))
-    call add(srcs, s:define_source('look/fm', ['mru', 'edit', 'file']))
+    call add(srcs, s:define_source('look/fm', ['mru', 'edit', 'file', 'line']))
     call add(srcs, s:define_source('look/goimport', ['goimport']))
     call add(srcs, s:define_source('look/command', ['command']))
     call add(srcs, s:define_source('look/grep', ['grep']))

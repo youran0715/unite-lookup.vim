@@ -16,12 +16,10 @@ class LookupGrep(Lookup):
         self.min_input = 3
         self.enable_filter_path = True
         self.max_candidates = 100
-
-    def need_sort(self):
-        return False
+        self.sortable = False
 
     def need_gather_candidates(self):
-        return not self.cache.exist_result(self.inputs) and not self.cache.exist_pre_candidates(self.inputs)
+        return self.is_redraw or (not self.cache.exist_result(self.inputs) and not self.cache.exist_pre_candidates(self.inputs))
 
     def do_gather_candidates(self):
         output = []
@@ -48,18 +46,18 @@ class LookupGrep(Lookup):
             col = items[2]
             body = ''.join(items[3::]).replace('\r', '').replace('\t', '').strip()
 
-            return (path, row, col, body)
+            return (path, int(row), int(col), body)
         except TypeError as e:
             return None
 
-    def format(self, rows):
+    def do_format(self, rows):
         return [{
                 "word": row[3],
                 "abbr": "{0}:{1} {2}".format(row[0], row[1], row[3]),
                 "kind": "jump_list",
                 "action__path": row[0],
-                "action__line": int(row[1]),
-                "action__col": int(row[2]),
+                "action__line": row[1],
+                "action__col": row[2],
                 "action__text":row[3] 
                 } for row in rows]
 

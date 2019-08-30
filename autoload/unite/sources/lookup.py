@@ -125,7 +125,7 @@ class Lookup(object):
                 if len(item) == 2:
                     itemcmp = (item[0].lower(), item[1].lower())
                 elif len(item) == 4:
-                    itemcmp = (item[0].lower(), item[1].lower(), item[2].lower(), item[3].lower())
+                    itemcmp = (item[0].lower(), item[1], item[2], item[3].lower())
             else:
                 itemcmp = item
 

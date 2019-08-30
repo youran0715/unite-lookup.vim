@@ -7,6 +7,7 @@ from lookup_file import *
 from lookup_grep import *
 from lookup_command import *
 from lookup_edit import *
+from lookup_line import *
 
 src_mru = LookupMru()
 src_edit = LookupEdit()
@@ -14,6 +15,7 @@ src_file = LookupFile()
 src_grep = LookupGrep()
 src_goimport = LookupGoimport()
 src_command = LookupCommand()
+src_line = LookupLine()
 
 class LookupMix(object):
     def __init__(self, src_names):
@@ -31,6 +33,8 @@ class LookupMix(object):
                 self.sources.append(src_command)
             elif name == "grep":
                 self.sources.append(src_grep)
+            elif name == "line":
+                self.sources.append(src_line)
 
     def unite_init(self):
         for src in self.sources:
