@@ -12,8 +12,8 @@ class LookupGoimport(Lookup):
         self.filter = LookupFilterPath()
         self.name = "goimport"
 
-    def need_gather_candidates(self):
-        return not self.is_load_candidates and self.get_buffer_filetype() == ".go"
+    def do_unite_init(self):
+        self.enable = self.get_buffer_filetype() == ".go"
 
     def do_gather_candidates(self, is_redraw):
         try:
@@ -21,14 +21,6 @@ class LookupGoimport(Lookup):
             result = executor.execute("gopkgs")
             return [line for line in result if line is not None]
         except Exception as e:
-            return []
-
-    def do_gather_candidates_old(self, is_redraw):
-        try:
-            output = subprocess.run(['gopkgs'], stdout=subprocess.PIPE, check=True)
-            return output.stdout.decode('utf-8').splitlines()
-        except subprocess.CalledProcessError as err:
-            denite.util.error(self.vim, "command returned invalid response: " + str(err))
             return []
 
     def format(self, rows):

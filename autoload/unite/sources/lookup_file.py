@@ -17,7 +17,7 @@ class LookupFile(Lookup):
         self.wildignore = {'dir':[], 'file': []}
         self.followlinks = False
         self.name = "file"
-        pass
+        self.enable_filter_path = True
 
     def get_filelist_path(self):
         return lookup_get_cache_path("filelist")
@@ -65,7 +65,7 @@ class LookupFile(Lookup):
         self.save(candidates)
         return candidates
 
-    def format(self, rows):
+    def do_format(self, rows):
         return [{ 
             'word': lookup_get_name_dir_abs_path(row), 
             'abbr': '[F] %s' % lookup_get_name_dir_abbr(row),

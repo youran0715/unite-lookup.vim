@@ -24,26 +24,23 @@ class Lookup(object):
 
         self.enable = True
         self.filter = None
-        self.is_load_candidates = False
-        self.is_redraw = False
-        self.is_init_reload = False
+        self.is_redraw = True
+        self.sortable = True
 
     def do_unite_init(self):
         pass
 
     def unite_init(self):
-        if self.is_init_reload:
-            self.is_load_candidates = False
         self.do_unite_init()
 
     def need_sort(self):
-        return True
+        return self.sortable
 
-    def need_clear_cache(self):
-        return False
+    def clear_cache(self):
+        self.cache.clear()
 
     def need_gather_candidates(self):
-        return not self.is_load_candidates
+        return self.is_redraw
 
     def do_gather_candidates(self, is_redraw = False):
         return self.candidates
@@ -55,13 +52,11 @@ class Lookup(object):
         return pathlib.Path(self.buffer).suffix
 
     def gather_candidates(self):
-        self.cache.clear()
+        self.clear_cache()
         self.candidates = self.do_gather_candidates(self.is_redraw)
-        self.is_load_candidates = True
         self.is_redraw = False
 
     def redraw(self):
-        self.is_load_candidates = False
         self.is_redraw = True
 
     def parse_inputs(self):
@@ -176,6 +171,9 @@ class Lookup(object):
 
         return result
 
+    def do_format(self, rows):
+        return [{'word': 'Please define do_format for %s' % self.name, 'kind': 'error'}]
+
     def search(self, inputs):
         if not self.enable:
             return []
@@ -186,20 +184,17 @@ class Lookup(object):
         if not self.is_input_length_ok():
             return [{'kind': 'none', 'word': 'Please input at least %d chars' % self.min_input}]
 
-        if self.need_clear_cache():
-            self.cache.clear()
-
-        if self.need_gather_candidates():
+        if self.need_gather_candidates:
            self.gather_candidates()
 
         if self.is_input_empty():
             rows = self.candidates if len(self.candidates) <= self.max_candidates else self.candidates[:self.max_candidates]
             # print("input empty rows count:%d" % len(rows))
-            return self.format(rows)
+            return self.do_format(rows)
 
         rows = self.filter_candidates()
 
-        return self.format(rows)
+        return self.do_format(rows)
 
     def calc_score_by_name_with_dir(self, reprog, filename, dirname):
         result = reprog.search(filename)

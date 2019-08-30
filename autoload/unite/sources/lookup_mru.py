@@ -12,7 +12,11 @@ class LookupMru(Lookup):
         self.filter = LookupFilterFilename()
         self.name = "mru"
         self.max_count = 30
-        self.is_init_reload = True
+        self.max_candidates = 15
+        self.enable_filter_path = True
+
+    def do_unite_init(self):
+        self.is_redraw = True
 
     def get_mru_path(self):
         return lookup_get_cache_path("mru")
@@ -33,9 +37,7 @@ class LookupMru(Lookup):
         except Exception as e:
             pass
 
-        # return candidates
         self.candidates = candidates
-        # print("mrus:", self.candidates)
 
     def save(self):
         with open(self.get_mru_path(), 'w') as f:
@@ -51,9 +53,6 @@ class LookupMru(Lookup):
         self.candidates = []
 
     def add(self, path):
-        # if not os.path.abspath(path).startswith(os.getcwd()):
-            # return
-
         file_name = os.path.basename(path)
         dir_name = os.path.dirname(os.path.relpath(path))
 
@@ -65,7 +64,7 @@ class LookupMru(Lookup):
         self.candidates.insert(0, item)
         self.candidates = self.candidates if len(self.candidates) < self.max_count else self.mrus[0:self.max_count]
 
-    def format(self, rows):
+    def do_format(self, rows):
         return [{ 
             'word': lookup_get_name_dir_abs_path(row), 
             'abbr': '[M] %s' % lookup_get_name_dir_abbr(row),

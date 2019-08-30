@@ -11,8 +11,12 @@ class LookupEdit(Lookup):
         super(LookupEdit, self).__init__()
         self.filter = LookupFilterFilename()
         self.name = "edit"
-        self.max_count = 1
-        self.is_init_reload = True
+        self.max_candidates = 1
+        self.sortable = False
+        self.enable_filter_path = True
+
+    def do_unite_init(self):
+        self.is_redraw = True
 
     def do_gather_candidates(self, is_redraw):
         path = self.buffer
@@ -23,7 +27,7 @@ class LookupEdit(Lookup):
         dir_name = os.path.dirname(os.path.relpath(path))
         return [(file_name, dir_name)]
 
-    def format(self, rows):
+    def do_format(self, rows):
         return [{ 
             'word': lookup_get_name_dir_abs_path(row), 
             'abbr': '[E] %s' % lookup_get_name_dir_abbr(row),
