@@ -23,7 +23,7 @@ class LookupBufTag(Lookup):
     def need_clear_cache(self):
         return True
 
-    def do_gather_candidates(self, is_redraw):
+    def do_gather_candidates(self):
         buffer = vim.current.buffer
         self._ctags = lfEval("g:ctags")
         if not buffer.name or lfEval("bufloaded(%d)" % buffer.number) == '0':

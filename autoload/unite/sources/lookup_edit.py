@@ -18,7 +18,7 @@ class LookupEdit(Lookup):
     def do_unite_init(self):
         self.is_redraw = True
 
-    def do_gather_candidates(self, is_redraw):
+    def do_gather_candidates(self):
         path = self.buffer
         if not os.path.isfile(path):
             return []

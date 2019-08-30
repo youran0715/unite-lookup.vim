@@ -17,14 +17,15 @@ class LookupFile(Lookup):
         self.wildignore = {'dir':[], 'file': []}
         self.followlinks = False
         self.name = "file"
+        self.is_redraw = False #有缓存文件
         self.enable_filter_path = True
 
     def get_filelist_path(self):
         return lookup_get_cache_path("filelist")
 
-    def do_gather_candidates(self, is_redraw):
+    def do_unite_init(self):
         candidates = []
-        if not is_redraw and os.path.exists(self.get_filelist_path()):
+        if os.path.exists(self.get_filelist_path()):
             try:
                 with open(self.get_filelist_path(),'r') as f:
                     lines = f.read().splitlines()
@@ -35,20 +36,12 @@ class LookupFile(Lookup):
             except Exception as e:
                 raise e
         else:
-            candidates = self.update()
-        return candidates
+            candidates = self.do_gather_candidates()
 
-    def save(self, candidates):
-        with open(self.get_filelist_path(), 'w') as f:
-            for item in candidates:
-                try:
-                    f.write("%s\t%s\n" % item)
-                except UnicodeEncodeError:
-                    continue
+        self.candidates = candidates
+        self.is_redraw = False
 
-            f.close()
-
-    def update(self):
+    def do_gather_candidates(self):
         start_time = time.time()
         candidates = []
         dir_path = os.getcwd()
@@ -64,6 +57,16 @@ class LookupFile(Lookup):
 
         self.save(candidates)
         return candidates
+
+    def save(self, candidates):
+        with open(self.get_filelist_path(), 'w') as f:
+            for item in candidates:
+                try:
+                    f.write("%s\t%s\n" % item)
+                except UnicodeEncodeError:
+                    continue
+
+            f.close()
 
     def do_format(self, rows):
         return [{ 

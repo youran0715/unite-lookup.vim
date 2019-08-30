@@ -15,7 +15,7 @@ class LookupCommand(Lookup):
         self.name = "command"
         pass
 
-    def do_gather_candidates(self, is_redraw):
+    def do_gather_candidates(self):
         tmp = vim.eval("@x")
         vim.command("redir @x")
 
@@ -30,5 +30,5 @@ class LookupCommand(Lookup):
                 if x.strip()]
         return result_list
 
-    def format(self, rows):
+    def do_format(self, rows):
         return [{'word': row, 'kind':'command', 'abbr': '[C] %s' % row} for row in rows]

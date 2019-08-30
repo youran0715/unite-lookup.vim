@@ -23,7 +23,7 @@ class LookupGrep(Lookup):
     def need_gather_candidates(self):
         return not self.cache.exist_result(self.inputs) and not self.cache.exist_pre_candidates(self.inputs)
 
-    def do_gather_candidates(self, is_redraw):
+    def do_gather_candidates(self):
         output = []
         args = self.get_args(self.input_kws[0])
         output = self.run_command_linux(args, os.getcwd())

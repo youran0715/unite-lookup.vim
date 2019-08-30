@@ -42,7 +42,7 @@ class Lookup(object):
     def need_gather_candidates(self):
         return self.is_redraw
 
-    def do_gather_candidates(self, is_redraw = False):
+    def do_gather_candidates(self):
         return self.candidates
 
     def set_buffer(self, buffer):
@@ -53,7 +53,7 @@ class Lookup(object):
 
     def gather_candidates(self):
         self.clear_cache()
-        self.candidates = self.do_gather_candidates(self.is_redraw)
+        self.candidates = self.do_gather_candidates()
         self.is_redraw = False
 
     def redraw(self):
@@ -100,9 +100,6 @@ class Lookup(object):
             return False
 
         return True
-
-    def format(self, rows):
-        return [{'word': row, 'kind': 'None'} for row in rows]
 
     def filter_candidates(self):
         if self.cache.exist_result(self.inputs):

@@ -39,6 +39,8 @@ def UnitePyLookupInit():
     context = vim.eval("a:context")
     source_name = context['source']['name']
     source = sources[source_name]
+
+    source.set_buffer(context['current_buffer'])
     source.unite_init()
 
 def UnitePyLookupRedraw():
@@ -58,8 +60,6 @@ def UnitePyLookupSearch():
     inputs = context['input']
 
     source = sources[source_name]
-
-    source.set_buffer(context['current_buffer'])
 
     start_time = time.time()
 
