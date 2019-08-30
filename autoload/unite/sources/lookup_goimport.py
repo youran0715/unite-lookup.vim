@@ -12,18 +12,48 @@ class LookupGoimport(Lookup):
         super(LookupGoimport, self).__init__()
         self.filter = LookupFilterPath()
         self.name = "goimport"
-        self.cache_path = lookup_get_cache_path('goimport', False)
+        self.cache_path = ".goimport"
 
     def do_unite_init(self):
+        self.cache_path = lookup_get_cache_path('goimport', False)
         self.enable = self.get_buffer_filetype() == ".go"
+        if not self.enable:
+            return
+
+        if os.path.exists(self.cache_path):
+            try:
+                with open(self.cache_path,'r') as f:
+                    lines = f.read().splitlines()
+                    for line in lines:
+                        candidates = line.split("\t")
+                    f.close()
+            except Exception as e:
+                raise e
+        else:
+            candidates = self.do_gather_candidates()
+
+        self.candidates = candidates
+        self.is_redraw = False
 
     def do_gather_candidates(self):
         try:
             executor = AsyncExecutor()
             result = executor.execute("gopkgs")
-            return [line for line in result if line is not None]
+            rows = [line for line in result if line is not None]
+            self.save(rows)
+            return rows
         except Exception as e:
             return []
+
+    def save(self, candidates):
+        with open(self.cache_path, 'w') as f:
+            for item in candidates:
+                try:
+                    f.write("%s\n" % item)
+                except UnicodeEncodeError:
+                    continue
+
+            f.close()
 
     def do_format(self, rows):
         return [{'word': row, 'kind':'goimport', 'abbr': '[G] %s' % row} for row in rows]

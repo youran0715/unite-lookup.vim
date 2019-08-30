@@ -25,6 +25,9 @@ class LookupFile(Lookup):
 
     def do_unite_init(self):
         candidates = []
+        if not self.is_redraw:
+            return
+
         if os.path.exists(self.get_filelist_path()):
             try:
                 with open(self.get_filelist_path(),'r') as f:

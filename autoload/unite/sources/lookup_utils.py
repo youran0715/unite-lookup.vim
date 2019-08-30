@@ -28,6 +28,7 @@ def lookup_set_cache_dir(path):
     hl.update(os.getcwd().encode(encoding='utf-8'))
     lookup_cwd_cache_dir = os.path.join(path, hl.hexdigest())
     try:
+        os.makedirs(lookup_cache_dir)
         os.makedirs(lookup_cwd_cache_dir)
     except Exception as e:
         pass
