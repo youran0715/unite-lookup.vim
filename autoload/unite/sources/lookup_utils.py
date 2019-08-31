@@ -29,6 +29,10 @@ def lookup_set_cache_dir(path):
     lookup_cwd_cache_dir = os.path.join(path, hl.hexdigest())
     try:
         os.makedirs(lookup_cache_dir)
+    except Exception as e:
+        pass
+
+    try:
         os.makedirs(lookup_cwd_cache_dir)
     except Exception as e:
         pass
