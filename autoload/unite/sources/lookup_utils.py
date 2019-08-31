@@ -7,6 +7,12 @@ import hashlib
 lookup_cache_dir = ".vimconfig"
 lookup_cwd_cache_dir = ".vimconfig"
 
+def lookup_mkdir(dirpath):
+    try:
+        os.makedirs(dirpath)
+    except Exception as e:
+        pass
+
 def lookup_get_name_dir_abbr(row):
     path = os.path.join(row[1], row[0])
     path = os.path.relpath(path).replace('\\', '/')
@@ -27,15 +33,9 @@ def lookup_set_cache_dir(path):
     hl = hashlib.md5()
     hl.update(os.getcwd().encode(encoding='utf-8'))
     lookup_cwd_cache_dir = os.path.join(path, hl.hexdigest())
-    try:
-        os.makedirs(lookup_cache_dir)
-    except Exception as e:
-        pass
 
-    try:
-        os.makedirs(lookup_cwd_cache_dir)
-    except Exception as e:
-        pass
+    lookup_mkdir(lookup_cache_dir)
+    lookup_mkdir(lookup_cwd_cache_dir)
 
 def lookup_get_cache_path(name, iscwd = True):
     if iscwd:
