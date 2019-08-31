@@ -6,7 +6,11 @@ from lookup_filter import *
 class LookupFilterFilename(LookupFilter):
     def __init__(self):
         super(LookupFilterFilename, self).__init__()
+        self.is_filter_path = True
         pass
+
+    def tolower(self, item):
+        return (item[0].lower(), item[1].lower())
 
     def get_score_kw(self, reprog, item):
         result = reprog.search(item[0])

@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import re
@@ -8,8 +8,50 @@ class LookupFilter(object):
         self.is_fuzzy = True
         self.is_smartcase = True
         self.is_casesensive = False
+        self.is_filter_path = False
         self._escape = dict((c , "\\" + c) for c in ['^','$','.','{','}','(',')','[',']','\\','/','+'])
-        pass
+
+    def get_result(self, islower, kws, paths, candidates):
+        re_kws = []
+        re_paths = []
+        for kw in kws:
+            if kw != "":
+                re_kws.append(self.get_regex_kw(kw))
+
+        for kw in paths:
+            if kw != "":
+                re_paths.append(self.get_regex_path(kw))
+
+        result = []
+        for item in candidates:
+            score = self.get_score(item, islower, re_kws, re_paths)
+            if score > 0:
+                result.append((score, item))
+        return result
+
+    def get_score(self, item, islower, re_kws, re_paths):
+        if islower:
+            item = self.tolower(item)
+
+        score_total = 0
+        for prog in re_kws:
+            score = self.get_score_kw(prog, item)
+            if score == 0:
+                return 0
+            score_total += score
+
+        if self.is_filter_path:
+            for prog in re_paths:
+                score = self.get_score_path(prog, item)
+                if score == 0:
+                    return 0
+                score_total += score
+
+        return score_total
+
+    def tolower(self, item):
+        print("You need define tolower for filter")
+        return item
 
     def contain_upper(self, kw):
         prog = re.compile('[A-Z]+')

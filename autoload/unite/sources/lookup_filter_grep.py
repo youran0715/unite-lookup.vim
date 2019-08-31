@@ -7,6 +7,10 @@ from lookup_filter import *
 class LookupFilterGrep(LookupFilter):
     def __init__(self):
         super(LookupFilterGrep, self).__init__()
+        self.is_filter_path = True
+
+    def tolower(self, item):
+        return (item[0].lower(), item[1], item[2], item[3].lower())
 
     def get_score_kw(self, reprog, item):
         return 1 if reprog.search(item[3]) else 0

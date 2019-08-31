@@ -8,6 +8,9 @@ class LookupFilterPath(LookupFilter):
         super(LookupFilterPath, self).__init__()
         pass
 
+    def tolower(self, item):
+        return item.lower()
+
     def get_score_kw(self, reprog, item):
         result = reprog.search(item)
         if result:
