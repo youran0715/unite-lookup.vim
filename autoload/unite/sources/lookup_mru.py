@@ -62,7 +62,7 @@ class LookupMru(Lookup):
         except Exception as e:
             pass
         self.candidates.insert(0, item)
-        self.candidates = self.candidates if len(self.candidates) < self.max_count else self.mrus[0:self.max_count]
+        self.candidates = self.candidates if len(self.candidates) < self.max_count else self.candidates[0:self.max_count]
 
     def do_format(self, rows):
         return [{ 
