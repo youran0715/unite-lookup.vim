@@ -23,9 +23,7 @@ class LookupGoimport(Lookup):
         if os.path.exists(self.cache_path):
             try:
                 with open(self.cache_path,'r') as f:
-                    lines = f.read().splitlines()
-                    for line in lines:
-                        candidates = line.split("\t")
+                    candidates = f.read().splitlines()
                     f.close()
             except Exception as e:
                 raise e
