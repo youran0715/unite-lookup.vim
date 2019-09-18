@@ -52,7 +52,7 @@ class LookupGrep(Lookup):
 
     def do_format(self, rows):
         return [{
-                "word": row[3],
+                "word": "{0}:{1}".format(row[0], row[1]),
                 "abbr": "{0}:{1} {2}".format(row[0], row[1], row[3]),
                 "kind": "jump_list",
                 "action__path": row[0],
