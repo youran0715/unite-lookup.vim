@@ -23,7 +23,7 @@ class LookupMru(Lookup):
 
     def do_gather_candidates(self):
         edit_path = os.path.abspath(self.buffer)
-        return [item for item in self.candidates if lookup_get_name_dir_abs_path(item) != edit_path]
+        return [item for item in self.candidates if lookup_get_name_dir_abs_path(item) != edit_path and os.path.isfile(item)]
 
     def load(self):
         candidates = []
