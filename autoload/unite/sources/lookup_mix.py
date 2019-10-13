@@ -9,6 +9,8 @@ from lookup_command import *
 from lookup_edit import *
 from lookup_line import *
 
+import vim
+
 src_mru = LookupMru()
 src_edit = LookupEdit()
 src_file = LookupFile()
@@ -16,6 +18,8 @@ src_grep = LookupGrep()
 src_goimport = LookupGoimport()
 src_command = LookupCommand()
 src_line = LookupLine()
+
+src_file.wildignore = vim.eval("g:lookupfile_WildIgnore")
 
 class LookupMix(object):
     def __init__(self, src_names):
