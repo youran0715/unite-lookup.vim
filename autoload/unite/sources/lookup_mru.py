@@ -53,8 +53,11 @@ class LookupMru(Lookup):
         self.candidates = []
 
     def add(self, path):
-        file_name = os.path.basename(path)
-        dir_name = os.path.dirname(os.path.relpath(path))
+        try:
+            file_name = os.path.basename(path)
+            dir_name = os.path.dirname(os.path.relpath(path))
+        except Exception as e:
+            return
 
         item = (file_name, dir_name)
         try:
