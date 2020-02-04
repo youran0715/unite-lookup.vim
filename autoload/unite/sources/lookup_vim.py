@@ -28,8 +28,11 @@ def UnitePyLookupMruLoad():
     src_mru.load()
 
 def UnitePyLookupMruAdd():
-    path = vim.eval('s:buf_path')
-    src_mru.add(path)
+    try:
+        path = vim.eval('s:buf_path')
+        src_mru.add(path)
+    except Exception as e:
+        pass
 
 def UnitePyLookupSetCacheDir():
     path = vim.eval('s:cache_dir')
