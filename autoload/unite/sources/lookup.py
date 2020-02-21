@@ -13,7 +13,7 @@ class Lookup(object):
         self.input_kws = []
         self.input_paths = []
         self.candidates = []
-        self.max_candidates = 20
+        self.max_candidates = 200
         self.min_input = 0
         self.is_path_split = False
         self.enable_filter_path = False
