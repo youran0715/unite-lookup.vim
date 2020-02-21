@@ -23,7 +23,7 @@ class LookupMru(Lookup):
 
     def do_gather_candidates(self):
         edit_path = os.path.abspath(self.buffer)
-        return [item for item in self.candidates if lookup_get_name_dir_abs_path(item) != edit_path]
+        return [item for item in self.candidates if lookup_get_name_dir_abs_path(item) != edit_path and os.path.isfile(lookup_get_name_dir_abs_path(item))]
 
     def load(self):
         candidates = []
@@ -53,8 +53,11 @@ class LookupMru(Lookup):
         self.candidates = []
 
     def add(self, path):
-        file_name = os.path.basename(path)
-        dir_name = os.path.dirname(os.path.relpath(path))
+        try:
+            file_name = os.path.basename(path)
+            dir_name = os.path.dirname(os.path.relpath(path))
+        except Exception as e:
+            return
 
         item = (file_name, dir_name)
         try:
