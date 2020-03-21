@@ -15,7 +15,7 @@ class LookupGrep(Lookup):
         self.name = "grep"
         self.min_input = 3
         self.enable_filter_path = True
-        self.max_candidates = 100
+        self.max_candidates = 10000
         self.sortable = False
 
     def need_gather_candidates(self):
